@@ -1,6 +1,6 @@
 # Calibre-Web Ansible role
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Calibre-Web](https://www.navidrome.org/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Calibre-Web](https://github.com/janeczku/calibre-web) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
 This role *implicitly* depends on:
 
