@@ -1,0 +1,25 @@
+---
+
+- name: Check existence of Calibre-web systemd service
+  ansible.builtin.stat:
+    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ calibre-web_identifier }}.service"
+  register: calibre-web_service_stat
+
+- when: calibre-web_service_stat.stat.exists | bool
+  block:
+    - name: Ensure Calibre-web systemd service is stopped
+      ansible.builtin.service:
+        name: "{{ calibre-web_identifier }}"
+        state: stopped
+        enabled: false
+        daemon_reload: true
+
+    - name: Ensure Calibre-web systemd service does not exist
+      ansible.builtin.file:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ calibre-web_identifier }}.service"
+        state: absent
+
+    - name: Ensure Calibre-web path doesn't exist
+      ansible.builtin.file:
+        path: "{{ calibre-web_base_path }}"
+        state: absent
