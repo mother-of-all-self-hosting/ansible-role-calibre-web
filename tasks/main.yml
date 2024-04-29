@@ -1,20 +1,20 @@
 ---
 
 - block:
-    - when: calibre-web_enabled | bool
+    - when: calibre_web_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
 
-    - when: calibre-web_enabled | bool
+    - when: calibre_web_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
   tags:
     - setup-all
-    - setup-calibre-web
+    - setup-calibre_web
     - install-all
-    - install-calibre-web
+    - install-calibre_web
 
 - block:
-    - when: not calibre-web_enabled | bool
+    - when: not calibre_web_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
   tags:
     - setup-all
-    - setup-calibre-web
+    - setup-calibre_web

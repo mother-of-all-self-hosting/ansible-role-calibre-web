@@ -1,52 +1,52 @@
-{% if calibre-web_container_labels_traefik_enabled %}
+{% if calibre_web_container_labels_traefik_enabled %}
 traefik.enable=true
 
-{% if calibre-web_container_labels_traefik_docker_network %}
-traefik.docker.network={{ calibre-web_container_labels_traefik_docker_network }}
+{% if calibre_web_container_labels_traefik_docker_network %}
+traefik.docker.network={{ calibre_web_container_labels_traefik_docker_network }}
 {% endif %}
 
 {% set middlewares = [] %}
 
-{% if calibre-web_container_labels_traefik_path_prefix != '/' %}
-traefik.http.middlewares.{{ calibre-web_identifier }}-slashless-redirect.redirectregex.regex=^({{ calibre-web_container_labels_traefik_path_prefix | quote }})$
-traefik.http.middlewares.{{ calibre-web_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
-{% set middlewares = middlewares + [calibre-web_identifier + '-slashless-redirect'] %}
+{% if calibre_web_container_labels_traefik_path_prefix != '/' %}
+traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=^({{ calibre_web_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
+{% set middlewares = middlewares + [calibre_web_identifier + '-slashless-redirect'] %}
 {% endif %}
 
 {#
 	Intentionally not adding a stripPrefix middleware.
-	calibre-web seems to serve itself under the same prefix it sees in the ND_BASEURL environment variable.
+	calibre_web seems to serve itself under the same prefix it sees in the ND_BASEURL environment variable.
 #}
 
-{% if calibre-web_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
-{% for name, value in calibre-web_container_labels_traefik_additional_request_headers.items() %}
-traefik.http.middlewares.{{ calibre-web_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}
+{% if calibre_web_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
+{% for name, value in calibre_web_container_labels_traefik_additional_request_headers.items() %}
+traefik.http.middlewares.{{ calibre_web_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}
 {% endfor %}
-{% set middlewares = middlewares + [calibre-web_identifier + '-add-request-headers'] %}
+{% set middlewares = middlewares + [calibre_web_identifier + '-add-request-headers'] %}
 {% endif %}
 
-{% if calibre-web_container_labels_traefik_additional_response_headers.keys() | length > 0 %}
-{% for name, value in calibre-web_container_labels_traefik_additional_response_headers.items() %}
-traefik.http.middlewares.{{ calibre-web_identifier }}-add-response-headers.headers.customresponseheaders.{{ name }}={{ value }}
+{% if calibre_web_container_labels_traefik_additional_response_headers.keys() | length > 0 %}
+{% for name, value in calibre_web_container_labels_traefik_additional_response_headers.items() %}
+traefik.http.middlewares.{{ calibre_web_identifier }}-add-response-headers.headers.customresponseheaders.{{ name }}={{ value }}
 {% endfor %}
-{% set middlewares = middlewares + [calibre-web_identifier + '-add-response-headers'] %}
+{% set middlewares = middlewares + [calibre_web_identifier + '-add-response-headers'] %}
 {% endif %}
 
-traefik.http.routers.{{ calibre-web_identifier }}.rule={{ calibre-web_container_labels_traefik_rule }}
-{% if calibre-web_container_labels_traefik_priority | int > 0 %}
-traefik.http.routers.{{ calibre-web_identifier }}.priority={{ calibre-web_container_labels_traefik_priority }}
+traefik.http.routers.{{ calibre_web_identifier }}.rule={{ calibre_web_container_labels_traefik_rule }}
+{% if calibre_web_container_labels_traefik_priority | int > 0 %}
+traefik.http.routers.{{ calibre_web_identifier }}.priority={{ calibre_web_container_labels_traefik_priority }}
 {% endif %}
-traefik.http.routers.{{ calibre-web_identifier }}.service={{ calibre-web_identifier }}
+traefik.http.routers.{{ calibre_web_identifier }}.service={{ calibre_web_identifier }}
 {% if middlewares | length > 0 %}
-traefik.http.routers.{{ calibre-web_identifier }}.middlewares={{ middlewares | join(',') }}
+traefik.http.routers.{{ calibre_web_identifier }}.middlewares={{ middlewares | join(',') }}
 {% endif %}
-traefik.http.routers.{{ calibre-web_identifier }}.entrypoints={{ calibre-web_container_labels_traefik_entrypoints }}
-traefik.http.routers.{{ calibre-web_identifier }}.tls={{ calibre-web_container_labels_traefik_tls | to_json }}
-{% if calibre-web_container_labels_traefik_tls %}
-traefik.http.routers.{{ calibre-web_identifier }}.tls.certResolver={{ calibre-web_container_labels_traefik_tls_certResolver }}
-{% endif %}
-
-traefik.http.services.{{ calibre-web_identifier }}.loadbalancer.server.port=4533
+traefik.http.routers.{{ calibre_web_identifier }}.entrypoints={{ calibre_web_container_labels_traefik_entrypoints }}
+traefik.http.routers.{{ calibre_web_identifier }}.tls={{ calibre_web_container_labels_traefik_tls | to_json }}
+{% if calibre_web_container_labels_traefik_tls %}
+traefik.http.routers.{{ calibre_web_identifier }}.tls.certResolver={{ calibre_web_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-{{ calibre-web_container_labels_additional_labels }}
+traefik.http.services.{{ calibre_web_identifier }}.loadbalancer.server.port=4533
+{% endif %}
+
+{{ calibre_web_container_labels_additional_labels }}

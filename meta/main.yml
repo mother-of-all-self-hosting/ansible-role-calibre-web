@@ -1,9 +1,9 @@
 galaxy_info:
   author: spaceling
   company: spaceling
-  role_name: calibre-web
+  role_name: calibre_web
   namespace: spaceling
-  description: Calibre-web
+  description: Calibre-Web
   platforms:
     - name: Debian
       versions:

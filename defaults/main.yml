@@ -1,92 +1,92 @@
 ---
 
-# Project source code URL: https://github.com/calibre-web/calibre-web
+# Project source code URL: https://github.com/calibre_web/calibre_web
 
-calibre-web_enabled: true
+calibre_web_enabled: true
 
-calibre-web_identifier: calibre-web
+calibre_web_identifier: calibre_web
 
-calibre-web_uid: ''
-calibre-web_gid: ''
+calibre_web_uid: ''
+calibre_web_gid: ''
 
-calibre-web_version: 0.6.21
+calibre_web_version: 0.6.21
 
-calibre-web_scheme: https
+calibre_web_scheme: https
 
-# The hostname at which calibre-web is served.
-calibre-web_hostname: ''
+# The hostname at which calibre_web is served.
+calibre_web_hostname: ''
 
-# The path at which calibre-web is served.
-# This value must either be `/` or not end with a slash (e.g. `/calibre-web`).
-calibre-web_path_prefix: /
+# The path at which calibre_web is served.
+# This value must either be `/` or not end with a slash (e.g. `/calibre_web`).
+calibre_web_path_prefix: /
 
-calibre-web_base_path: "/{{ calibre-web_identifier }}"
-calibre-web_data_path: "{{ calibre-web_base_path }}/data"
+calibre_web_base_path: "/{{ calibre_web_identifier }}"
+calibre_web_data_path: "{{ calibre_web_base_path }}/data"
 
-calibre-web_container_image: "{{ calibre-web_container_image_registry_prefix }}linuxserver/calibre-web:{{ calibre-web_container_image_tag }}"
-calibre-web_container_image_registry_prefix: docker.io/
-calibre-web_container_image_tag: "{{ calibre-web_version }}"
-calibre-web_container_image_force_pull: "{{ calibre-web_container_image.endswith(':latest') }}"
+calibre_web_container_image: "{{ calibre_web_container_image_registry_prefix }}linuxserver/calibre_web:{{ calibre_web_container_image_tag }}"
+calibre_web_container_image_registry_prefix: docker.io/
+calibre_web_container_image_tag: "{{ calibre_web_version }}"
+calibre_web_container_image_force_pull: "{{ calibre_web_container_image.endswith(':latest') }}"
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
-calibre-web_container_network: "{{ calibre-web_identifier }}"
+calibre_web_container_network: "{{ calibre_web_identifier }}"
 
 # A list of additional container networks that the container would be connected to.
 # The role does not create these networks, so make sure they already exist.
 # Use this to expose this container to another reverse proxy, which runs in a different container network.
-calibre-web_container_additional_networks: "{{ calibre-web_container_additional_networks_auto + calibre-web_container_additional_networks_custom }}"
-calibre-web_container_additional_networks_auto: []
-calibre-web_container_additional_networks_custom: []
+calibre_web_container_additional_networks: "{{ calibre_web_container_additional_networks_auto + calibre_web_container_additional_networks_custom }}"
+calibre_web_container_additional_networks_auto: []
+calibre_web_container_additional_networks_custom: []
 
 # Specifies how the container publishes its HTTP port
 #
 # Takes an "<ip>:<port>" value (e.g. "127.0.0.1:4533"), just a port number or an empty string to not expose.
-calibre-web_container_http_bind_port: ''
+calibre_web_container_http_bind_port: ''
 
-# calibre-web_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
+# calibre_web_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
 # See `../templates/labels.j2` for details.
 #
-# To inject your own other container labels, see `calibre-web_container_labels_additional_labels`.
-calibre-web_container_labels_traefik_enabled: true
-calibre-web_container_labels_traefik_docker_network: "{{ calibre-web_container_network }}"
-calibre-web_container_labels_traefik_hostname: "{{ calibre-web_hostname }}"
-# The path prefix must either be `/` or not end with a slash (e.g. `/calibre-web`).
-calibre-web_container_labels_traefik_path_prefix: "{{ calibre-web_path_prefix }}"
-calibre-web_container_labels_traefik_rule: "Host(`{{ calibre-web_container_labels_traefik_hostname }}`){% if calibre-web_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ calibre-web_container_labels_traefik_path_prefix }}`){% endif %}"
-calibre-web_container_labels_traefik_priority: 0
-calibre-web_container_labels_traefik_entrypoints: web-secure
-calibre-web_container_labels_traefik_tls: "{{ calibre-web_container_labels_traefik_entrypoints != 'web' }}"
-calibre-web_container_labels_traefik_tls_certResolver: default  # noqa var-naming
+# To inject your own other container labels, see `calibre_web_container_labels_additional_labels`.
+calibre_web_container_labels_traefik_enabled: true
+calibre_web_container_labels_traefik_docker_network: "{{ calibre_web_container_network }}"
+calibre_web_container_labels_traefik_hostname: "{{ calibre_web_hostname }}"
+# The path prefix must either be `/` or not end with a slash (e.g. `/calibre_web`).
+calibre_web_container_labels_traefik_path_prefix: "{{ calibre_web_path_prefix }}"
+calibre_web_container_labels_traefik_rule: "Host(`{{ calibre_web_container_labels_traefik_hostname }}`){% if calibre_web_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ calibre_web_container_labels_traefik_path_prefix }}`){% endif %}"
+calibre_web_container_labels_traefik_priority: 0
+calibre_web_container_labels_traefik_entrypoints: web-secure
+calibre_web_container_labels_traefik_tls: "{{ calibre_web_container_labels_traefik_entrypoints != 'web' }}"
+calibre_web_container_labels_traefik_tls_certResolver: default  # noqa var-naming
 
 # Controls which additional headers to attach to all HTTP requests.
-# To add your own custom request headers, use `calibre-web_container_labels_traefik_additional_response_headers_custom`
-calibre-web_container_labels_traefik_additional_request_headers: "{{ calibre-web_container_labels_traefik_additional_request_headers_auto | combine(calibre-web_container_labels_traefik_additional_request_headers_custom) }}"
-calibre-web_container_labels_traefik_additional_request_headers_auto: {}
-calibre-web_container_labels_traefik_additional_request_headers_custom: {}
+# To add your own custom request headers, use `calibre_web_container_labels_traefik_additional_response_headers_custom`
+calibre_web_container_labels_traefik_additional_request_headers: "{{ calibre_web_container_labels_traefik_additional_request_headers_auto | combine(calibre_web_container_labels_traefik_additional_request_headers_custom) }}"
+calibre_web_container_labels_traefik_additional_request_headers_auto: {}
+calibre_web_container_labels_traefik_additional_request_headers_custom: {}
 
 # Controls which additional headers to attach to all HTTP responses.
-# To add your own custom response headers, use `calibre-web_container_labels_traefik_additional_response_headers_custom`
-calibre-web_container_labels_traefik_additional_response_headers: "{{ calibre-web_container_labels_traefik_additional_response_headers_auto | combine(calibre-web_container_labels_traefik_additional_response_headers_custom) }}"
-calibre-web_container_labels_traefik_additional_response_headers_auto: |
+# To add your own custom response headers, use `calibre_web_container_labels_traefik_additional_response_headers_custom`
+calibre_web_container_labels_traefik_additional_response_headers: "{{ calibre_web_container_labels_traefik_additional_response_headers_auto | combine(calibre_web_container_labels_traefik_additional_response_headers_custom) }}"
+calibre_web_container_labels_traefik_additional_response_headers_auto: |
   {{
     {}
-    | combine ({'X-XSS-Protection': calibre-web_http_header_xss_protection} if calibre-web_http_header_xss_protection else {})
-    | combine ({'X-Frame-Options': calibre-web_http_header_frame_options} if calibre-web_http_header_frame_options else {})
-    | combine ({'X-Content-Type-Options': calibre-web_http_header_content_type_options} if calibre-web_http_header_content_type_options else {})
-    | combine ({'Content-Security-Policy': calibre-web_http_header_content_security_policy} if calibre-web_http_header_content_security_policy else {})
-    | combine ({'Permission-Policy': calibre-web_http_header_content_permission_policy} if calibre-web_http_header_content_permission_policy else {})
-    | combine ({'Strict-Transport-Security': calibre-web_http_header_strict_transport_security} if calibre-web_http_header_strict_transport_security and calibre-web_container_labels_traefik_tls else {})
+    | combine ({'X-XSS-Protection': calibre_web_http_header_xss_protection} if calibre_web_http_header_xss_protection else {})
+    | combine ({'X-Frame-Options': calibre_web_http_header_frame_options} if calibre_web_http_header_frame_options else {})
+    | combine ({'X-Content-Type-Options': calibre_web_http_header_content_type_options} if calibre_web_http_header_content_type_options else {})
+    | combine ({'Content-Security-Policy': calibre_web_http_header_content_security_policy} if calibre_web_http_header_content_security_policy else {})
+    | combine ({'Permission-Policy': calibre_web_http_header_content_permission_policy} if calibre_web_http_header_content_permission_policy else {})
+    | combine ({'Strict-Transport-Security': calibre_web_http_header_strict_transport_security} if calibre_web_http_header_strict_transport_security and calibre_web_container_labels_traefik_tls else {})
   }}
-calibre-web_container_labels_traefik_additional_response_headers_custom: {}
+calibre_web_container_labels_traefik_additional_response_headers_custom: {}
 
-# calibre-web_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
+# calibre_web_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
 # See `../templates/labels.j2` for details.
 #
 # Example:
-# calibre-web_container_labels_additional_labels: |
+# calibre_web_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-calibre-web_container_labels_additional_labels: ''
+calibre_web_container_labels_additional_labels: ''
 
 # Specifies how often the container health-check will run.
 #
@@ -97,14 +97,14 @@ calibre-web_container_labels_additional_labels: ''
 # Thus, the health interval determines the initial start-up time -- the smaller, the better.
 #
 # For non-Traefik setups, we use the default healthcheck interval (30s) to decrease overhead.
-calibre-web_container_health_interval: "{{ '5s' if calibre-web_container_labels_traefik_enabled else '30s' }}"
+calibre_web_container_health_interval: "{{ '5s' if calibre_web_container_labels_traefik_enabled else '30s' }}"
 
 # A list of additional "volumes" to mount in the container.
 #
 # See the `--mount` documentation for the `docker run` command.
 #
 # Example:
-# calibre-web_container_additional_volumes:
+# calibre_web_container_additional_volumes:
 #   - type: bind
 #     src: /path/on/the/host
 #     dst: /data
@@ -112,16 +112,16 @@ calibre-web_container_health_interval: "{{ '5s' if calibre-web_container_labels_
 #     src: /another-path/on/the/host
 #     dst: /read-only
 #     options: readonly
-calibre-web_container_additional_volumes: []
+calibre_web_container_additional_volumes: []
 
 # A list of extra arguments to pass to the container
-calibre-web_container_extra_arguments: []
+calibre_web_container_extra_arguments: []
 
 # Controls the `ND_MUSICFOLDER` environment variable
-calibre-web_environment_variables_cw_booksfolder: /books
+calibre_web_environment_variables_cw_booksfolder: /books
 
 # Additional environment variables.
-calibre-web_environment_variables_additional_variables: ''
+calibre_web_environment_variables_additional_variables: ''
 
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
@@ -129,27 +129,27 @@ calibre-web_environment_variables_additional_variables: ''
 # Learn more about it is here:
 # - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
 # - https://portswigger.net/web-security/cross-site-scripting/reflected
-calibre-web_http_header_xss_protection: "1; mode=block"
+calibre_web_http_header_xss_protection: "1; mode=block"
 
 # Specifies the value of the `X-Frame-Options` header which controls whether framing can happen.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-calibre-web_http_header_frame_options: SAMEORIGIN
+calibre_web_http_header_frame_options: SAMEORIGIN
 
 # Specifies the value of the `X-Content-Type-Options` header.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-calibre-web_http_header_content_type_options: nosniff
+calibre_web_http_header_content_type_options: nosniff
 
 # Specifies the value of the `Content-Security-Policy` header.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
-calibre-web_http_header_content_security_policy: frame-ancestors 'self'
+calibre_web_http_header_content_security_policy: frame-ancestors 'self'
 
 # Specifies the value of the `Permission-Policy` header.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permission-Policy
-calibre-web_http_header_content_permission_policy: "{{ 'interest-cohort=()' if calibre-web_floc_optout_enabled else '' }}"
+calibre_web_http_header_content_permission_policy: "{{ 'interest-cohort=()' if calibre_web_floc_optout_enabled else '' }}"
 
 # Specifies the value of the `Strict-Transport-Security` header.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
-calibre-web_http_header_strict_transport_security: "max-age=31536000; includeSubDomains{{ '; preload' if calibre-web_hsts_preload_enabled else '' }}"
+calibre_web_http_header_strict_transport_security: "max-age=31536000; includeSubDomains{{ '; preload' if calibre_web_hsts_preload_enabled else '' }}"
 
 # Controls whether to send a "Permissions-Policy interest-cohort=();" header along with all responses
 #
@@ -159,8 +159,8 @@ calibre-web_http_header_strict_transport_security: "max-age=31536000; includeSub
 # - https://amifloced.org/
 #
 # Of course, a better solution is to just stop using browsers (like Chrome), which participate in such tracking practices.
-# See: `calibre-web_content_permission_policy`
-calibre-web_floc_optout_enabled: true
+# See: `calibre_web_content_permission_policy`
+calibre_web_floc_optout_enabled: true
 
 # Controls if HSTS preloading is enabled
 #
@@ -171,11 +171,11 @@ calibre-web_floc_optout_enabled: true
 # - https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
 # - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
 # - https://hstspreload.org/#opt-in
-# See: `calibre-web_http_header_strict_transport_security`
-calibre-web_hsts_preload_enabled: false
+# See: `calibre_web_http_header_strict_transport_security`
+calibre_web_hsts_preload_enabled: false
 
-# List of systemd services that calibre-web.service depends on
-calibre-web_systemd_required_services_list: "{{ calibre-web_systemd_required_systemd_services_list_default + calibre-web_systemd_required_systemd_services_list_auto + calibre-web_systemd_required_systemd_services_list_custom }}"
-calibre-web_systemd_required_systemd_services_list_default: ['docker.service']
-calibre-web_systemd_required_systemd_services_list_auto: []
-calibre-web_systemd_required_systemd_services_list_custom: []
+# List of systemd services that calibre_web.service depends on
+calibre_web_systemd_required_services_list: "{{ calibre_web_systemd_required_systemd_services_list_default + calibre_web_systemd_required_systemd_services_list_auto + calibre_web_systemd_required_systemd_services_list_custom }}"
+calibre_web_systemd_required_systemd_services_list_default: ['docker.service']
+calibre_web_systemd_required_systemd_services_list_auto: []
+calibre_web_systemd_required_systemd_services_list_custom: []

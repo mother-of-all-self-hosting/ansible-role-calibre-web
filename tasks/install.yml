@@ -1,44 +1,44 @@
 ---
 
-- name: Ensure Calibre-web paths exist
+- name: Ensure Calibre-Web paths exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: 0750
-    owner: "{{ calibre-web_uid }}"
-    group: "{{ calibre-web_gid }}"
+    owner: "{{ calibre_web_uid }}"
+    group: "{{ calibre_web_gid }}"
   with_items:
-    - "{{ calibre-web_base_path }}"
-    - "{{ calibre-web_data_path }}"
+    - "{{ calibre_web_base_path }}"
+    - "{{ calibre_web_data_path }}"
 
-- name: Ensure Calibre-web support files installed
+- name: Ensure Calibre-Web support files installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
-    dest: "{{ calibre-web_base_path }}/{{ item }}"
+    dest: "{{ calibre_web_base_path }}/{{ item }}"
     mode: 0640
-    owner: "{{ calibre-web_uid }}"
-    group: "{{ calibre-web_gid }}"
+    owner: "{{ calibre_web_uid }}"
+    group: "{{ calibre_web_gid }}"
   with_items:
     - env
     - labels
 
-- name: Ensure Calibre-web container image is pulled
+- name: Ensure Calibre-Web container image is pulled
   community.docker.docker_image:
-    name: "{{ calibre-web_container_image }}"
+    name: "{{ calibre_web_container_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ calibre-web_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else calibre-web_container_image_force_pull }}"
+    force_source: "{{ calibre_web_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else calibre_web_container_image_force_pull }}"
   register: result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
   until: result is not failed
 
-- name: Ensure Calibre-web container network is created
+- name: Ensure Calibre-Web container network is created
   community.general.docker_network:
-    name: "{{ calibre-web_container_network }}"
+    name: "{{ calibre_web_container_network }}"
     driver: bridge
 
-- name: Ensure Calibre-web systemd service is present
+- name: Ensure Calibre-Web systemd service is present
   ansible.builtin.template:
-    src: "{{ role_path }}/templates/systemd/calibre-web.service.j2"
-    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ calibre-web_identifier }}.service"
+    src: "{{ role_path }}/templates/systemd/calibre_web.service.j2"
+    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ calibre_web_identifier }}.service"
