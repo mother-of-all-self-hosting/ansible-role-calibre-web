@@ -23,7 +23,7 @@ calibre_web_path_prefix: /
 calibre_web_base_path: "/{{ calibre_web_identifier }}"
 calibre_web_data_path: "{{ calibre_web_base_path }}/data"
 
-calibre_web_container_image: "{{ calibre_web_container_image_registry_prefix }}linuxserver/calibre_web:{{ calibre_web_container_image_tag }}"
+calibre_web_container_image: "{{ calibre_web_container_image_registry_prefix }}linuxserver/calibre-web:{{ calibre_web_container_image_tag }}"
 calibre_web_container_image_registry_prefix: docker.io/
 calibre_web_container_image_tag: "{{ calibre_web_version }}"
 calibre_web_container_image_force_pull: "{{ calibre_web_container_image.endswith(':latest') }}"
