@@ -18,18 +18,16 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--rm \
 			--name={{ calibre_web_identifier }} \
 			--log-driver=none \
-			--user={{ calibre_web_uid }}:{{ calibre_web_gid }} \
 			--cap-drop=ALL \
-			--read-only \
 			--network={{ calibre_web_container_network }} \
 			{% if calibre_web_container_http_bind_port %}
-			-p {{ calibre_web_container_http_bind_port }}:8083 \
+			-p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
 			{% endif %}
 			--env-file={{ calibre_web_base_path }}/env \
 			--label-file={{ calibre_web_base_path }}/labels \
 			--health-interval={{ calibre_web_container_health_interval }} \
 			--tmpfs=/tmp:rw,noexec,nosuid,size=100m \
-			--mount type=bind,src={{ calibre_web_data_path }},dst=/data \
+			--mount type=bind,src={{ calibre_web_config_path }},dst=/config \
 			{% for volume in calibre_web_container_additional_volumes %}
 			--mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
 			{% endfor %}

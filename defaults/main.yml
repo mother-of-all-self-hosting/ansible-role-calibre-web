@@ -21,7 +21,7 @@ calibre_web_hostname: ''
 calibre_web_path_prefix: /
 
 calibre_web_base_path: "/{{ calibre_web_identifier }}"
-calibre_web_data_path: "{{ calibre_web_base_path }}/data"
+calibre_web_config_path: "{{ calibre_web_base_path }}/config"
 
 calibre_web_container_image: "{{ calibre_web_container_image_registry_prefix }}linuxserver/calibre-web:{{ calibre_web_container_image_tag }}"
 calibre_web_container_image_registry_prefix: docker.io/
@@ -41,6 +41,7 @@ calibre_web_container_additional_networks_custom: []
 # Specifies how the container publishes its HTTP port
 #
 # Takes an "<ip>:<port>" value (e.g. "127.0.0.1:4533"), just a port number or an empty string to not expose.
+calibre_web_container_http_port: '8083'
 calibre_web_container_http_bind_port: ''
 
 # calibre_web_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.

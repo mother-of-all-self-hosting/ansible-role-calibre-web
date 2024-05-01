@@ -4,7 +4,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: 0750
+    mode: 0700
     owner: "{{ calibre_web_uid }}"
     group: "{{ calibre_web_gid }}"
   with_items:
@@ -15,7 +15,7 @@
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
     dest: "{{ calibre_web_base_path }}/{{ item }}"
-    mode: 0640
+    mode: 0600
     owner: "{{ calibre_web_uid }}"
     group: "{{ calibre_web_gid }}"
   with_items:
