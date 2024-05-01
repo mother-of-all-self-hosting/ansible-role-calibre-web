@@ -46,7 +46,7 @@ traefik.http.routers.{{ calibre_web_identifier }}.tls={{ calibre_web_container_l
 traefik.http.routers.{{ calibre_web_identifier }}.tls.certResolver={{ calibre_web_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-traefik.http.services.{{ calibre_web_identifier }}.loadbalancer.server.port=4533
+traefik.http.services.{{ calibre_web_identifier }}.loadbalancer.server.port=8083
 {% endif %}
 
 {{ calibre_web_container_labels_additional_labels }}
