@@ -4,7 +4,7 @@
 
 calibre_web_enabled: true
 
-calibre_web_identifier: calibre_web
+calibre_web_identifier: calibre-web
 
 calibre_web_uid: ''
 calibre_web_gid: ''

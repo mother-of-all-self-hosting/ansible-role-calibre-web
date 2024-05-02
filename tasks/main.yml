@@ -8,13 +8,13 @@
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
   tags:
     - setup-all
-    - setup-calibre_web
+    - setup-calibre-web
     - install-all
-    - install-calibre_web
+    - install-calibre-web
 
 - block:
     - when: not calibre_web_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
   tags:
     - setup-all
-    - setup-calibre_web
+    - setup-calibre-web

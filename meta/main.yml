@@ -1,7 +1,7 @@
 galaxy_info:
   author: spaceling
   company: spaceling
-  role_name: calibre_web
+  role_name: calibre-web
   namespace: spaceling
   description: Calibre-Web
   platforms:
