@@ -124,6 +124,15 @@ calibre_web_environment_variables_cw_booksfolder: /books
 # Additional environment variables.
 calibre_web_environment_variables_additional_variables: ''
 
+# Additional environment variables to pass to the Calibre-Web container.
+# You can use this to further influence the default configuration.
+# Check https://github.com/linuxserver/docker-calibre-web to enable Calibre E-Book Converter
+#
+# Example:
+# calibre_web_environment_variables_extension: |
+#   DOCKER_MODS=linuxserver/mods:universal-calibre
+calibre_web_environment_variables_extension: ''
+
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
 #
