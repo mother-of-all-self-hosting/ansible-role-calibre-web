@@ -22,7 +22,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			{% if calibre_web_container_http_bind_port %}
 			-p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
 			{% endif %}
-			--env-file={{ calibre_web_base_path }}/env \
+			--env-file={{ calibre_web_env_path }} \
 			--label-file={{ calibre_web_base_path }}/labels \
 			--health-interval={{ calibre_web_container_health_interval }} \
 			--tmpfs=/tmp:rw,noexec,nosuid,size=100m \

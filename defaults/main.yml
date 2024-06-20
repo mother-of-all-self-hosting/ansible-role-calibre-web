@@ -118,6 +118,8 @@ calibre_web_container_additional_volumes: []
 # A list of extra arguments to pass to the container
 calibre_web_container_extra_arguments: []
 
+calibre_web_env_path: "{{ calibre_web_base_path }}/env"
+
 # Controls the `ND_MUSICFOLDER` environment variable
 calibre_web_environment_variables_cw_booksfolder: /books
 
