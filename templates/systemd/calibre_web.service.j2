@@ -25,7 +25,6 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--env-file={{ calibre_web_env_path }} \
 			--label-file={{ calibre_web_base_path }}/labels \
 			--health-interval={{ calibre_web_container_health_interval }} \
-			--tmpfs=/tmp:rw,noexec,nosuid,size=100m \
 			--mount type=bind,src={{ calibre_web_config_path }},dst=/config \
 			{% for volume in calibre_web_container_additional_volumes %}
 			--mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
