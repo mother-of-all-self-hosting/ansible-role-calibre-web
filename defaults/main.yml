@@ -9,7 +9,7 @@ calibre_web_identifier: calibre-web
 calibre_web_uid: ''
 calibre_web_gid: ''
 
-calibre_web_version: 0.6.22
+calibre_web_version: 0.6.23
 
 calibre_web_scheme: https
 
