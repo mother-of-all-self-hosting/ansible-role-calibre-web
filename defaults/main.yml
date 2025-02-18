@@ -68,7 +68,7 @@ calibre_web_container_labels_traefik_additional_request_headers_custom: {'X-Clac
 # Controls which additional headers to attach to all HTTP responses.
 # To add your own custom response headers, use `calibre_web_container_labels_traefik_additional_response_headers_custom`
 # calibre_web_container_labels_traefik_additional_response_headers: "{{ calibre_web_container_labels_traefik_additional_response_headers_auto | combine(calibre_web_container_labels_traefik_additional_response_headers_custom) }}"
-calibre_web_container_labels_traefik_additional_response_headers: {}
+calibre_web_container_labels_traefik_additional_response_headers: {'X-Clacks-Overhead': GNU Terry Pratchett}
 calibre_web_container_labels_traefik_additional_response_headers_auto: |
   {{
     {}
