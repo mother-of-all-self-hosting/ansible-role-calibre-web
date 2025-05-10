@@ -5,32 +5,27 @@ Description=Calibre-Web ({{ calibre_web_identifier }})
 Requires={{ service }}
 After={{ service }}
 {% endfor %}
+{% for service in calibre_web_systemd_wanted_services_list %}
+Wants={{ service }}
+{% endfor %}
 DefaultDependencies=no
 
 [Service]
 Type=simple
 Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
-ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ calibre_web_identifier }} 2>/dev/null || true'
-ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ calibre_web_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
 
-{# We mount a tmpfs at /tmp to allow calibre_web migrations to run. #}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--rm \
 			--name={{ calibre_web_identifier }} \
 			--log-driver=none \
 			--network={{ calibre_web_container_network }} \
-			{% if calibre_web_container_http_bind_port %}
-			-p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
-			{% endif %}
 			--env-file={{ calibre_web_env_path }} \
 			--label-file={{ calibre_web_base_path }}/labels \
-			--health-interval={{ calibre_web_container_health_interval }} \
 			--mount type=bind,src={{ calibre_web_config_path }},dst=/config \
 			{% for volume in calibre_web_container_additional_volumes %}
 			--mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
-			{% endfor %}
-			{% for arg in calibre_web_container_extra_arguments %}
-			{{ arg }} \
 			{% endfor %}
 			{{ calibre_web_container_image }}
 
@@ -40,7 +35,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network conne
 
 ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ calibre_web_identifier }}
 
-ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ calibre_web_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ calibre_web_identifier }} 2>/dev/null || true'
 ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ calibre_web_identifier }} 2>/dev/null || true'
 
 Restart=always

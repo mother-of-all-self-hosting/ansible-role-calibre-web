@@ -7,29 +7,25 @@ traefik.docker.network={{ calibre_web_container_labels_traefik_docker_network }}
 
 {% set middlewares = [] %}
 
+{% if calibre_web_container_labels_traefik_compression_middleware_enabled %}
+{% set middlewares = middlewares + [calibre_web_container_labels_traefik_compression_middleware_name] %}
+{% endif %}
+
 {% if calibre_web_container_labels_traefik_path_prefix != '/' %}
-traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=^({{ calibre_web_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=({{ calibre_web_container_labels_traefik_path_prefix | quote }})$
 traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
 {% set middlewares = middlewares + [calibre_web_identifier + '-slashless-redirect'] %}
 {% endif %}
 
 {#
 	Intentionally not adding a stripPrefix middleware.
-	calibre_web seems to serve itself under the same prefix it sees in the ND_BASEURL environment variable.
 #}
-
-{% if calibre_web_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
-{% for name, value in calibre_web_container_labels_traefik_additional_request_headers.items() %}
-traefik.http.middlewares.{{ calibre_web_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}
-{% endfor %}
-{% set middlewares = middlewares + [calibre_web_identifier + '-add-request-headers'] %}
-{% endif %}
 
 {% if calibre_web_container_labels_traefik_additional_response_headers.keys() | length > 0 %}
 {% for name, value in calibre_web_container_labels_traefik_additional_response_headers.items() %}
-traefik.http.middlewares.{{ calibre_web_identifier }}-add-response-headers.headers.customresponseheaders.{{ name }}={{ value }}
+traefik.http.middlewares.{{ calibre_web_identifier }}-add-headers.headers.customresponseheaders.{{ name }}={{ value }}
 {% endfor %}
-{% set middlewares = middlewares + [calibre_web_identifier + '-add-response-headers'] %}
+{% set middlewares = middlewares + [calibre_web_identifier + '-add-headers'] %}
 {% endif %}
 
 traefik.http.routers.{{ calibre_web_identifier }}.rule={{ calibre_web_container_labels_traefik_rule }}

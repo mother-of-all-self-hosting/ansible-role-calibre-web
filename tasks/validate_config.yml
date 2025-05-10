@@ -13,7 +13,8 @@
     - calibre_web_path_prefix
     - calibre_web_container_network
 
-- when: calibre_web_container_labels_traefik_enabled | bool
+- name: Validate Calibre-Web Traefik configuration
+  when: calibre_web_container_labels_traefik_enabled | bool
   block:
     - name: Fail if required Calibre-Web Traefik settings not defined
       ansible.builtin.fail:
@@ -32,3 +33,11 @@
         msg: >-
           calibre_web_container_labels_traefik_path_prefix (`{{ calibre_web_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/calibre_web`).
       when: "calibre_web_container_labels_traefik_path_prefix != '/' and calibre_web_container_labels_traefik_path_prefix[-1] == '/'"
+
+    - name: Fail if calibre_web_path_prefix is anything other than /
+      ansible.builtin.fail:
+        msg: >-
+          `calibre_web_path_prefix` must be set to `/`.
+          See the comments for the `calibre_web_path_prefix` variable in `defaults/main.yml`.
+          Hosting calibre_web at a subdirectory may or may not work as expected - it will most likely require additional work.
+      when: "calibre_web_path_prefix != '/'"
