@@ -14,6 +14,7 @@
   with_items:
     - "{{ calibre_web_base_path }}"
     - "{{ calibre_web_config_path }}"
+    - "{{ calibre_web_books_path }}"
 
 - name: Ensure Calibre-Web support files installed
   ansible.builtin.template:
