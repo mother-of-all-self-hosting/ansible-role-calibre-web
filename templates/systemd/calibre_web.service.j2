@@ -31,7 +31,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% if calibre_web_container_http_bind_port %}
       -p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
       {% endif %}
-      --env-file={{ calibre_web_env_path }} \
+      --env-file={{ calibre_web_base_path }}/env \
       --label-file={{ calibre_web_base_path }}/labels \
       --mount type=bind,src={{ calibre_web_config_path }},dst=/config \
       {% for volume in calibre_web_container_additional_volumes %}
