@@ -4,22 +4,24 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
-- block:
-    - when: calibre_web_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-
-    - when: calibre_web_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+- name: Perform Calibre-Web installation tasks
+  when: calibre_web_enabled | bool
   tags:
     - setup-all
     - setup-calibre-web
     - install-all
     - install-calibre-web
+  block:
+    - name: Validate Calibre-Web configuration
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+    - name: Install Calibre-Web
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
-- block:
-    - when: not calibre_web_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+- name: Perform Calibre-Web uninstallation tasks
+  when: not calibre_web_enabled | bool
   tags:
     - setup-all
     - setup-calibre-web
+  block:
+    - name: Uninstall Calibre-Web
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
