@@ -169,6 +169,9 @@ calibre_web_systemd_wanted_services_list_custom: []
 # Controls the `cw_booksfolder` environment variable
 calibre_web_environment_variables_cw_booksfolder: /books
 
+# Specify a timezone to use
+calibre_web_environment_variables_tz: Etc/UTC
+
 # Additional environment variables to pass to the Calibre-Web container.
 # You can use this to further influence the default configuration.
 # Check https://github.com/linuxserver/docker-calibre-web to enable Calibre E-Book Converter
