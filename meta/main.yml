@@ -2,7 +2,7 @@ galaxy_info:
   author: spaceling
   company: spaceling
   role_name: calibre-web
-  namespace: spaceling
+  namespace: mash
   description: Calibre-Web
   platforms:
     - name: Debian
