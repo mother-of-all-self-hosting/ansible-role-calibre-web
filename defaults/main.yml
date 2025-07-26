@@ -120,10 +120,6 @@ calibre_web_container_extra_arguments: []
 # - https://portswigger.net/web-security/cross-site-scripting/reflected
 calibre_web_http_header_xss_protection: "1; mode=block"
 
-# Specifies the value of the `X-Frame-Options` header which controls whether framing can happen.
-# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-calibre_web_http_header_frame_options: SAMEORIGIN
-
 # Specifies the value of the `X-Content-Type-Options` header.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
 calibre_web_http_header_content_type_options: nosniff
