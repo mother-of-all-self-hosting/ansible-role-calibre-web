@@ -13,7 +13,6 @@ calibre_web_identifier: calibre-web
 calibre_web_base_path: "/{{ calibre_web_identifier }}"
 calibre_web_config_path: "{{ calibre_web_base_path }}/config"
 
-
 calibre_web_version: 0.6.24
 
 calibre_web_uid: ''

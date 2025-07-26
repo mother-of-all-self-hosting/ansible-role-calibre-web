@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Check existence of Calibre-Web systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ calibre_web_identifier }}.service"
   register: calibre_web_service_stat
 
-- when: calibre_web_service_stat.stat.exists | bool
+- name: Uninstall Calibre-Web systemd services and files
+  when: calibre_web_service_stat.stat.exists | bool
   block:
     - name: Ensure Calibre-Web systemd service is stopped
       ansible.builtin.service:
