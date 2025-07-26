@@ -172,6 +172,9 @@ calibre_web_environment_variables_cw_booksfolder: /books
 # Specify a timezone to use
 calibre_web_environment_variables_tz: Etc/UTC
 
+# Control if Google OAUTH is allowed to work
+calibre_web_environment_variables_oauth_enabled: false
+
 # Additional environment variables to pass to the Calibre-Web container.
 # You can use this to further influence the default configuration.
 # Check https://github.com/linuxserver/docker-calibre-web to enable Calibre E-Book Converter
