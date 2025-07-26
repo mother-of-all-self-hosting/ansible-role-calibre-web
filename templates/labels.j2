@@ -1,6 +1,7 @@
 {#
 SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 SPDX-FileCopyrightText: 2024 noah
+SPDX-FileCopyrightText: 2025 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 #}
@@ -49,7 +50,7 @@ traefik.http.routers.{{ calibre_web_identifier }}.tls={{ calibre_web_container_l
 traefik.http.routers.{{ calibre_web_identifier }}.tls.certResolver={{ calibre_web_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-traefik.http.services.{{ calibre_web_identifier }}.loadbalancer.server.port=8083
+traefik.http.services.{{ calibre_web_identifier }}.loadbalancer.server.port={{ calibre_web_container_http_port }}
 {% endif %}
 
 {{ calibre_web_container_labels_additional_labels }}

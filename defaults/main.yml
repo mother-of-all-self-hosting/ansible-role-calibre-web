@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 noah
+# SPDX-FileCopyrightText: 2025 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -43,7 +44,7 @@ calibre_web_container_http_bind_port: ''
 calibre_web_container_network: "{{ calibre_web_identifier }}"
 
 # The port number in the container
-calibre_web_container_http_port: ''
+calibre_web_container_http_port: 8083
 
 # A list of additional container networks that the container would be connected to.
 # The role does not create these networks, so make sure they already exist.

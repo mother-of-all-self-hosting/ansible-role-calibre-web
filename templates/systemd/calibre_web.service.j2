@@ -1,6 +1,7 @@
 {#
 SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 SPDX-FileCopyrightText: 2024 noah
+SPDX-FileCopyrightText: 2025 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 #}
@@ -27,6 +28,9 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --name={{ calibre_web_identifier }} \
       --log-driver=none \
       --network={{ calibre_web_container_network }} \
+      {% if calibre_web_container_http_bind_port %}
+      -p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
+      {% endif %}
       --env-file={{ calibre_web_env_path }} \
       --label-file={{ calibre_web_base_path }}/labels \
       --mount type=bind,src={{ calibre_web_config_path }},dst=/config \
