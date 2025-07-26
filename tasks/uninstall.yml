@@ -40,7 +40,7 @@
       register: network_deletion_result
       changed_when: calibre_web_container_network in network_deletion_result.stdout
 
-    - name: Ensure Calibre-Web path doesn't exist
+    - name: Ensure Calibre-Web path does not exist
       ansible.builtin.file:
         path: "{{ calibre_web_base_path }}"
         state: absent
