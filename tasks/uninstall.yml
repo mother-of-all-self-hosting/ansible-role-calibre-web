@@ -33,7 +33,7 @@
         - env
         - labels
 
-    - name: Ensure Calibre-Web container source files path does not exist
+    - name: Ensure Calibre-Web image source files path does not exist
       ansible.builtin.file:
         path: "{{ calibre_web_container_image_self_build_src_files_path }}"
         state: absent
