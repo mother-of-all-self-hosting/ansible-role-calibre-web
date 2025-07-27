@@ -25,6 +25,19 @@
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ calibre_web_identifier }}.service"
         state: absent
 
+    - name: Ensure Calibre-Web support files do not exist
+      ansible.builtin.file:
+        path: "{{ calibre_web_base_path }}/{{ item }}"
+        state: absent
+      with_items:
+        - env
+        - labels
+
+    - name: Ensure Calibre-Web container source files path does not exist
+      ansible.builtin.file:
+        path: "{{ calibre_web_container_image_self_build_src_files_path }}"
+        state: absent
+
     - name: Ensure Calibre-Web container network does not exist via community.docker.docker_network
       when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
       community.docker.docker_network:
@@ -40,7 +53,38 @@
       register: network_deletion_result
       changed_when: calibre_web_container_network in network_deletion_result.stdout
 
-    - name: Ensure Calibre-Web path does not exist
-      ansible.builtin.file:
-        path: "{{ calibre_web_base_path }}"
-        state: absent
+- name: Check existence of Calibre-Web internal database and config path
+  ansible.builtin.stat:
+    path: "{{ calibre_web_config_path }}"
+  register: calibre_web_config_path_stat
+
+# We just want to notify the user. Deleting data is too destructive.
+- name: Notify if Calibre-Web internal database and config path remains
+  when: calibre_web_config_path_stat.stat.exists | bool
+  ansible.builtin.set_fact:
+    devture_playbook_runtime_messages_list: |
+      {{
+        devture_playbook_runtime_messages_list | default([])
+        +
+        [
+          "Note: As the local Calibre-Web instance has been removed, internal database and config data remain in `{{ calibre_web_config_path }}`. Feel free to delete it."
+        ]
+      }}
+
+- name: Check existence of Calibre-Web preexisting calibre database path
+  ansible.builtin.stat:
+    path: "{{ calibre_web_books_path }}"
+  register: calibre_web_books_path_stat
+
+# We just want to notify the user. Deleting data is too destructive.
+- name: Notify if Calibre-Web preexisting calibre database path remains
+  when: calibre_web_books_path_stat.stat.exists | bool
+  ansible.builtin.set_fact:
+    devture_playbook_runtime_messages_list: |
+      {{
+        devture_playbook_runtime_messages_list | default([])
+        +
+        [
+          "Note: As the local Calibre-Web instance has been removed, preexisting calibre database remains in `{{ calibre_web_books_path }}`. Feel free to delete it."
+        ]
+      }}
