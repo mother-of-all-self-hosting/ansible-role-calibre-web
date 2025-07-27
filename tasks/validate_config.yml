@@ -9,7 +9,7 @@
     msg: >-
       Your configuration contains a variable, which now has a different name.
       Please change your configuration to rename the variable (`{{ item.old }}` -> `{{ item.new }}`).
-  when: "lookup('ansible.builtin.varnames', ('^' + item.old + '), wantlist=True) | length > 0"
+  when: "lookup('ansible.builtin.varnames', ('^' + item.old + '$'), wantlist=True) | length > 0"
   with_items:
     - { "old": "calibre_web_base_path", "new": "<Removed>" }
     - { "old": "calibre_web_environment_variables_extension", "new": "calibre_web_environment_variables_additional_variables" }
