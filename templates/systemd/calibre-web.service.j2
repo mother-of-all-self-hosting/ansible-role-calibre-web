@@ -23,10 +23,19 @@ Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ calibre_web_identifier }} 2>/dev/null || true'
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ calibre_web_identifier }} 2>/dev/null || true'
 
+{#
+  PUID and PGID are specified on env.j2 to run the container as calibre_web_uid:calibre_web_gid
+  See: https://github.com/linuxserver/docker-calibre-web/blob/master/README.md#user--group-identifiers
+#}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --rm \
       --name={{ calibre_web_identifier }} \
       --log-driver=none \
+      --cap-drop=ALL \
+      --cap-add=CAP_DAC_OVERRIDE \
+      --cap-add=CHOWN \
+      --cap-add=SETUID \
+      --cap-add=SETGID \
       --network={{ calibre_web_container_network }} \
       {% if calibre_web_container_http_bind_port %}
       -p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
