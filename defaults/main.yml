@@ -20,12 +20,12 @@ calibre_web_version: 0.6.24
 calibre_web_uid: ''
 calibre_web_gid: ''
 
-# The hostname at which calibre_web is served.
+# The hostname at which Calibre-Web is served.
 calibre_web_hostname: ''
 
 calibre_web_scheme: https
 
-# The path at which Calibre Web is served.
+# The path at which Calibre-Web is served.
 # This value must either be `/` or not end with a slash (e.g. `/calibre_web`).
 calibre_web_path_prefix: /
 
