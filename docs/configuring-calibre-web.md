@@ -105,7 +105,7 @@ You can log in to the instance with the default login credential of the admin ac
 
 On the initial configuration screen, enter `/books` as your Calibre library location.
 
-After setting up the database configuration, **make sure to change the login credential** at `https://mash.example.com/calibre-web/admin/view`.
+After setting up the database configuration, **make sure to change the login credential** at `https://example.com/calibre-web/admin/view`.
 
 ## Troubleshooting
 
