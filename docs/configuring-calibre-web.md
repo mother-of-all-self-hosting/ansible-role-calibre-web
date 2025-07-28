@@ -11,6 +11,7 @@ SPDX-FileCopyrightText: 2022 Warren Bailey
 SPDX-FileCopyrightText: 2023 Antonis Christofides
 SPDX-FileCopyrightText: 2023 Felix Stupp
 SPDX-FileCopyrightText: 2023 Pierre 'McFly' Marty
+SPDX-FileCopyrightText: 2024 noah
 SPDX-FileCopyrightText: 2024 - 2025 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
@@ -18,16 +19,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Setting up Calibre-Web
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Calibre-Web](https://duplicati.com) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Calibre-Web](https://github.com/janeczku/calibre-web) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
-Calibre-Web is a backup software that securely stores encrypted, incremental, compressed backups on local storage, cloud storage services and remote file servers. It works with standard protocols like FTP, SSH, WebDAV as well as popular services like Microsoft OneDrive, Amazon S3 (compatible) Object Storage, Google Drive, box.com, Mega, B2, and many others.
+Calibre-Web is a web app that offers a clean and intuitive interface for browsing, reading, and downloading eBooks using a valid [Calibre](https://calibre-ebook.com/) database.
 
-See the project's [documentation](https://docs.duplicati.com) to learn what Calibre-Web does and why it might be useful to you.
-
->[!NOTE]
-> As the Calibre-Web instance runs as the Docker container, it is necessary to mount the directory which includes files to back up on the host machine. Note that it is not able for the container to access files **outside of the mounted directory**.
->
-> If you wish to manage a backup of directories on the machine without such restriction, you might probably want to consider to install Calibre-Web directly on the host machine. See [this page on the official documentation](https://docs.duplicati.com/getting-started/installation) for details.
+See the project's [documentation](https://github.com/janeczku/calibre-web/wiki) to learn what Calibre-Web does and why it might be useful to you.
 
 ## Adjusting the playbook configuration
 
@@ -61,25 +57,27 @@ calibre_web_hostname: "example.com"
 
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
-### Mount a directory for files to backup
+### Mount a directory for loading Calibre database (optional)
 
-You can mount the directory by adding the following configuration to your `vars.yml` file:
+By default, Calibre-Web will search `/books` directory for your Calibre database.
 
-```yaml
-calibre_web_source_path: /path/on/the/host
-```
-
-Make sure permissions and owner of the directory specified to `calibre_web_source_path`.
-
-### Set a password for the UI
-
-You also need to set a log in password on the web UI by adding the following configuration to your `vars.yml` file:
+You can mount a directory so that the instance loads the database. To mount it, prepare a local directory on the host machine and add the following configuration to your `vars.yml` file:
 
 ```yaml
-calibre_web_environment_variable_calibre_web__webservice_password: YOUR_WEBUI_PASSWORD_HERE
+calibre_web_books_path: /path/on/the/host
 ```
 
-Replace `YOUR_WEBUI_PASSWORD_HERE` with your own value.
+Make sure permissions and owner of the directory specified to `calibre_web_books_path`.
+
+### Enable ebook conversion binary (optional)
+
+You can add the Calibre ebook-convert binary (x64 only) by adding the following configuration to your `vars.yml` file:
+
+```yaml
+calibre_web_environment_variables_conversion_ability_enabled: true
+```
+
+The path to the binary is `/usr/bin/ebook-convert`. It needs to be specified in the web interface — as well as the path to Calibre binaries (`usr/bin`).
 
 ### Extending the configuration
 
@@ -101,38 +99,13 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 ## Usage
 
-After running the command for installation, Calibre-Web becomes available at the specified hostname like `https://example.com`.
+After running the command for installation, Calibre-Web becomes available at the specified hostname with `calibre_web_hostname` and `calibre_web_path_prefix` like `https://example.com/calibre-web`.
 
-You can log in to the UI by inputting the password set to `calibre_web_environment_variable_calibre_web__webservice_password`.
+You can log in to the instance with the default login credential of the admin account (username: `admin`, password: `admin123`).
 
-On the UI you can add and edit a backup task, restore files from backups, and configure default backup settings, etc. See <https://docs.duplicati.com/getting-started/set-up-a-backup-in-the-ui> for the instruction to configure a backup task.
+On the initial configuration screen, enter `/books` as your Calibre library location.
 
-### Destination and Source Data settings
-
-When configuring a backup task, it should be noted that the Calibre-Web instance is able to access read / write data on the host machine through the mounted directories only.
-
-By default, directories for "Destination" and "Source Data" are mounted on the paths specified with `calibre_web_backup_path` and `calibre_web_source_path`, respectively. While `calibre_web_backup_path` is set by this role, `calibre_web_source_path` needs to be specified manually as stated above.
-
->[!NOTE]
-> While system files and directories are visible on the UI for "Destination" and "Source Data" settings, they belong to the Docker container, not the host machine.
-
-#### Destination setting
-
-On the second step you can configure settings for backup destination (where to store backups).
-
-If "Local folder or drive" is selected as the storage type on the configuration UI, **choose `backup` on the directories tree on "Folder path"**, so that backups can be shared with the host machine.
-
->[!NOTE]
-> Inside the container is there a directory named "backups" as well (mind the last "s") — Make sure not to confuse them.
-
-#### Source Data setting
-
-On the next step for Source Data setting, **choose `source` or directories inside it** as the backup source.
-
->[!WARNING]
-> Choosing directories outside of it would just create an useless backup of data inside the Calibre-Web's Docker container, not of data on the mounted directory which belongs to the host machine.
-
-If you include Calibre-Web's directory itself in the backup, make sure to exclude `backup` as it is used for storing backups if "Local folder or drive" is selected as the destination; including it would have those backups backed up again.
+After setting up the database configuration, **make sure to change the login credential** at `https://mash.example.com/calibre-web/admin/view`.
 
 ## Troubleshooting
 
