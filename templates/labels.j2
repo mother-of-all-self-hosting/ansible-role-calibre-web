@@ -20,7 +20,7 @@ traefik.docker.network={{ calibre_web_container_labels_traefik_docker_network }}
 {% endif %}
 
 {% if calibre_web_container_labels_traefik_path_prefix != '/' %}
-traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=({{ calibre_web_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=^({{ calibre_web_container_labels_traefik_path_prefix | quote }})$
 traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
 {% set middlewares = middlewares + [calibre_web_identifier + '-slashless-redirect'] %}
 {% endif %}
