@@ -30,7 +30,7 @@
 - name: Validate Calibre-Web Traefik configuration
   when: calibre_web_container_labels_traefik_enabled | bool
   block:
-    - name: Fail if required Calibre-Web Traefik settings not defined
+    - name: Fail if Traefik settings required for Calibre-Web are not defined
       ansible.builtin.fail:
         msg: >-
           You need to define a required configuration setting (`{{ item }}`).
