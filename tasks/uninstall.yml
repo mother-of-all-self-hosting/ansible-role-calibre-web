@@ -67,7 +67,7 @@
         devture_playbook_runtime_messages_list | default([])
         +
         [
-          "Note: As the local Calibre-Web instance has been removed, internal database and config data remain in `{{ calibre_web_config_path }}`. Feel free to delete it."
+          "Note: As the local Calibre-Web instance has been removed, internal database and config data remain in `" + calibre_web_config_path + "`. Feel free to delete it."
         ]
       }}
 
@@ -85,6 +85,6 @@
         devture_playbook_runtime_messages_list | default([])
         +
         [
-          "Note: As the local Calibre-Web instance has been removed, preexisting calibre database remains in `{{ calibre_web_books_path }}`. Feel free to delete it."
+          "Note: As the local Calibre-Web instance has been removed, preexisting calibre database remains in `" + calibre_web_books_path + "`. Feel free to delete it."
         ]
       }}
