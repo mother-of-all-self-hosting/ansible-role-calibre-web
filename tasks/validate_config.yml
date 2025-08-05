@@ -39,6 +39,13 @@
         - calibre_web_container_labels_traefik_hostname
         - calibre_web_container_labels_traefik_path_prefix
 
+    - name: Fail if calibre_web_container_labels_traefik_path_prefix is different than /
+      ansible.builtin.fail:
+        msg: >-
+          calibre_web_container_labels_traefik_path_prefix (`{{ calibre_web_container_labels_traefik_path_prefix }}`) must be `/`.
+          Calibre-Web does not support hosting under a subpath yet.
+      when: "calibre_web_container_labels_traefik_path_prefix != '/'"
+
     # We ensure it doesn't end with a slash, because we handle both (slash and no-slash).
     # Knowing that `calibre_web_container_labels_traefik_path_prefix` does not end with a slash
     # ensures we know how to set these routes up without having to do "does it end with a slash" checks elsewhere.
@@ -47,11 +54,3 @@
         msg: >-
           calibre_web_container_labels_traefik_path_prefix (`{{ calibre_web_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/calibre_web`).
       when: "calibre_web_container_labels_traefik_path_prefix != '/' and calibre_web_container_labels_traefik_path_prefix[-1] == '/'"
-
-    - name: Fail if calibre_web_path_prefix is anything other than /
-      ansible.builtin.fail:
-        msg: >-
-          `calibre_web_path_prefix` must be set to `/`.
-          See the comments for the `calibre_web_path_prefix` variable in `defaults/main.yml`.
-          Hosting calibre_web at a subdirectory may or may not work as expected - it will most likely require additional work.
-      when: "calibre_web_path_prefix != '/'"
