@@ -104,7 +104,7 @@ calibre_web_container_labels_traefik_additional_response_headers_auto: |
     | combine ({'X-XSS-Protection': calibre_web_http_header_xss_protection} if calibre_web_http_header_xss_protection else {})
     | combine ({'X-Content-Type-Options': calibre_web_http_header_content_type_options} if calibre_web_http_header_content_type_options else {})
     | combine ({'Content-Security-Policy': calibre_web_http_header_content_security_policy} if calibre_web_http_header_content_security_policy else {})
-    | combine ({'Permission-Policy': calibre_web_http_header_content_permission_policy} if calibre_web_http_header_content_permission_policy else {})
+    | combine ({'Permissions-Policy': calibre_web_http_header_permissions_policy} if calibre_web_http_header_permissions_policy else {})
     | combine ({'Strict-Transport-Security': calibre_web_http_header_strict_transport_security} if calibre_web_http_header_strict_transport_security and calibre_web_container_labels_traefik_tls else {})
   }}
 calibre_web_container_labels_traefik_additional_response_headers_custom: {'X-Clacks-Overhead': GNU Terry Pratchett}
@@ -137,9 +137,9 @@ calibre_web_http_header_content_type_options: nosniff
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
 calibre_web_http_header_content_security_policy: frame-ancestors 'self'
 
-# Specifies the value of the `Permission-Policy` header.
-# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permission-Policy
-calibre_web_http_header_content_permission_policy: "{{ 'interest-cohort=()' if calibre_web_floc_optout_enabled else '' }}"
+# Specifies the value of the `Permissions-Policy` header.
+# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy
+calibre_web_http_header_permissions_policy: "{{ 'interest-cohort=()' if calibre_web_floc_optout_enabled else '' }}"
 
 # Specifies the value of the `Strict-Transport-Security` header.
 # See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
@@ -153,7 +153,7 @@ calibre_web_http_header_strict_transport_security: "max-age=31536000; includeSub
 # - https://amifloced.org/
 #
 # Of course, a better solution is to just stop using browsers (like Chrome), which participate in such tracking practices.
-# See: `calibre_web_content_permission_policy`
+# See: `calibre_web_http_header_permissions_policy`
 calibre_web_floc_optout_enabled: true
 
 # Controls if HSTS preloading is enabled
