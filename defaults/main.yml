@@ -17,11 +17,11 @@ calibre_web_books_path: "{{ calibre_web_base_path }}/books"
 # renovate: datasource=docker depName=linuxserver/calibre-web
 calibre_web_version: 0.6.25
 
-calibre_web_uid: ''
-calibre_web_gid: ''
+calibre_web_uid: ""
+calibre_web_gid: ""
 
 # The hostname at which Calibre-Web is served.
-calibre_web_hostname: ''
+calibre_web_hostname: ""
 
 calibre_web_scheme: https
 
@@ -45,7 +45,7 @@ calibre_web_container_image_self_build_src_files_path: "{{ calibre_web_base_path
 # Controls whether the container exposes its HTTP port (tcp/80 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
-calibre_web_container_http_bind_port: ''
+calibre_web_container_http_bind_port: ""
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 calibre_web_container_network: "{{ calibre_web_identifier }}"
@@ -116,7 +116,7 @@ calibre_web_container_labels_traefik_additional_response_headers_custom: {'X-Cla
 # calibre_web_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-calibre_web_container_labels_additional_labels: ''
+calibre_web_container_labels_additional_labels: ""
 
 # A list of extra arguments to pass to the container
 calibre_web_container_extra_arguments: []
@@ -199,4 +199,4 @@ calibre_web_environment_variables_conversion_ability_enabled: false
 # Example:
 # calibre_web_environment_variables_additional_variables: |
 #   DOCKER_MODS=linuxserver/mods:universal-calibre
-calibre_web_environment_variables_additional_variables: ''
+calibre_web_environment_variables_additional_variables: ""
