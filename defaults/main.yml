@@ -180,11 +180,11 @@ calibre_web_systemd_wanted_services_list_default: []
 calibre_web_systemd_wanted_services_list_auto: []
 calibre_web_systemd_wanted_services_list_custom: []
 
+# Specify the timezone
+calibre_web_environment_variables_tz: Etc/UTC
+
 # Controls the `cw_booksfolder` environment variable
 calibre_web_environment_variables_cw_booksfolder: /books
-
-# Specify a timezone to use
-calibre_web_environment_variables_tz: Etc/UTC
 
 # Control if Google OAUTH is allowed to work
 calibre_web_environment_variables_oauth_enabled: false
