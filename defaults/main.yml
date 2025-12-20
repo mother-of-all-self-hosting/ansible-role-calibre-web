@@ -116,7 +116,9 @@ calibre_web_container_labels_traefik_additional_response_headers_custom: {'X-Cla
 # calibre_web_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-calibre_web_container_labels_additional_labels: ""
+calibre_web_container_labels_additional_labels: "{{ calibre_web_container_labels_additional_labels_auto | combine(calibre_web_container_labels_additional_labels_custom) }}"
+calibre_web_container_labels_additional_labels_auto: {}
+calibre_web_container_labels_additional_labels_custom: {}
 
 # A list of extra arguments to pass to the container
 calibre_web_container_extra_arguments: "{{ calibre_web_container_extra_arguments_auto + calibre_web_container_extra_arguments_custom }}"
