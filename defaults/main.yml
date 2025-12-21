@@ -121,7 +121,7 @@ calibre_web_container_labels_additional_labels: "{{ calibre_web_container_labels
 calibre_web_container_labels_additional_labels_auto: {}
 calibre_web_container_labels_additional_labels_custom: {}
 
-# A list of extra arguments to pass to the container
+# A list of extra arguments to pass to the container (`docker create` command)
 calibre_web_container_extra_arguments: "{{ calibre_web_container_extra_arguments_auto + calibre_web_container_extra_arguments_custom }}"
 calibre_web_container_extra_arguments_auto: []
 calibre_web_container_extra_arguments_custom: []
