@@ -15,7 +15,7 @@ calibre_web_config_path: "{{ calibre_web_base_path }}/config"
 calibre_web_books_path: "{{ calibre_web_base_path }}/books"
 
 # renovate: datasource=docker depName=linuxserver/calibre-web
-calibre_web_version: 0.6.25
+calibre_web_version: 5.33.2
 
 calibre_web_uid: ""
 calibre_web_gid: ""
