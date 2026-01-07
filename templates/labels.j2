@@ -60,4 +60,6 @@ traefik.http.routers.{{ calibre_web_identifier }}.tls.certResolver={{ calibre_we
 traefik.http.services.{{ calibre_web_identifier }}.loadbalancer.server.port={{ calibre_web_container_http_port }}
 {% endif %}
 
-{{ calibre_web_container_labels_additional_labels }}
+{% for arg in calibre_web_container_labels_additional_labels %}
+{{ arg }}
+{% endfor %}
