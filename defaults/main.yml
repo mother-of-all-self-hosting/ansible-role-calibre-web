@@ -111,12 +111,15 @@ calibre_web_container_labels_traefik_additional_response_headers_custom: {'X-Cla
 
 # calibre_web_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
 # See `../templates/labels.j2` for details.
+# To add your own custom labels, use `calibre_web_container_labels_additional_labels_custom`
 #
 # Example:
-# calibre_web_container_labels_additional_labels: |
-#   my.label=1
-#   another.label="here"
-calibre_web_container_labels_additional_labels: ""
+# calibre_web_container_labels_additional_labels_custom:
+#   - my.label=1
+#   - another.label="here"
+calibre_web_container_labels_additional_labels: "{{ calibre_web_container_labels_additional_labels_auto + calibre_web_container_labels_additional_labels_custom }}"
+calibre_web_container_labels_additional_labels_auto: []
+calibre_web_container_labels_additional_labels_custom: []
 
 # A list of extra arguments to pass to the container (`docker create` command)
 calibre_web_container_extra_arguments: "{{ calibre_web_container_extra_arguments_auto + calibre_web_container_extra_arguments_custom }}"
