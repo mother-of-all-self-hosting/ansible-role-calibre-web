@@ -118,8 +118,10 @@ calibre_web_container_labels_traefik_additional_response_headers_custom: {'X-Cla
 #   another.label="here"
 calibre_web_container_labels_additional_labels: ""
 
-# A list of extra arguments to pass to the container
-calibre_web_container_extra_arguments: []
+# A list of extra arguments to pass to the container (`docker create` command)
+calibre_web_container_extra_arguments: "{{ calibre_web_container_extra_arguments_auto + calibre_web_container_extra_arguments_custom }}"
+calibre_web_container_extra_arguments_auto: []
+calibre_web_container_extra_arguments_custom: []
 
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
