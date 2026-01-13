@@ -20,13 +20,14 @@ calibre_web_version: 0.6.25
 calibre_web_uid: ""
 calibre_web_gid: ""
 
+# The scheme used for serving Calibre-Web.
+calibre_web_scheme: https
+
 # The hostname at which Calibre-Web is served.
 calibre_web_hostname: ""
 
-calibre_web_scheme: https
-
 # The path at which Calibre-Web is served.
-# This value must either be `/` or not end with a slash (e.g. `/calibre_web`).
+# This value must either be `/` or not end with a slash (e.g. `/calibre-web`).
 calibre_web_path_prefix: /
 
 calibre_web_container_image: "{{ calibre_web_container_image_registry_prefix }}linuxserver/calibre-web:{{ calibre_web_container_image_tag }}"
@@ -76,7 +77,7 @@ calibre_web_container_additional_volumes_custom: []
 calibre_web_container_labels_traefik_enabled: true
 calibre_web_container_labels_traefik_docker_network: "{{ calibre_web_container_network }}"
 calibre_web_container_labels_traefik_hostname: "{{ calibre_web_hostname }}"
-# The path prefix must either be `/` or not end with a slash (e.g. `/calibre_web`).
+# The path prefix must either be `/` or not end with a slash (e.g. `/calibre-web`).
 calibre_web_container_labels_traefik_path_prefix: "{{ calibre_web_path_prefix }}"
 calibre_web_container_labels_traefik_rule: "Host(`{{ calibre_web_container_labels_traefik_hostname }}`){% if calibre_web_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ calibre_web_container_labels_traefik_path_prefix }}`){% endif %}"
 calibre_web_container_labels_traefik_priority: 0
