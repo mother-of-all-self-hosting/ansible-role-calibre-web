@@ -53,5 +53,5 @@
     - name: Fail if calibre_web_container_labels_traefik_path_prefix ends with a slash
       ansible.builtin.fail:
         msg: >-
-          calibre_web_container_labels_traefik_path_prefix (`{{ calibre_web_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/calibre_web`).
+          calibre_web_container_labels_traefik_path_prefix (`{{ calibre_web_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/calibre-web`).
       when: "calibre_web_container_labels_traefik_path_prefix != '/' and calibre_web_container_labels_traefik_path_prefix[-1] == '/'"
