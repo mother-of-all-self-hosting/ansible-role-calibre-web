@@ -46,7 +46,7 @@ calibre_web_container_image_self_build_src_files_path: "{{ calibre_web_base_path
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 calibre_web_container_network: "{{ calibre_web_identifier }}"
 
-# Controls whether the container exposes its HTTP port (tcp/80 in the container).
+# Specify how the container publishes its HTTP port (as defined by `calibre_web_container_http_port`).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
 calibre_web_container_http_bind_port: ""
