@@ -34,8 +34,8 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --cap-drop=ALL \
       --cap-add=CAP_DAC_OVERRIDE \
       --cap-add=CHOWN \
-      --cap-add=SETUID \
       --cap-add=SETGID \
+      --cap-add=SETUID \
       --network={{ calibre_web_container_network }} \
       {% if calibre_web_container_http_bind_port %}
       -p {{ calibre_web_container_http_bind_port }}:{{ calibre_web_container_http_port }} \
