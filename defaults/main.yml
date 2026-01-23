@@ -174,7 +174,7 @@ calibre_web_floc_optout_enabled: true
 # See: `calibre_web_http_header_strict_transport_security`
 calibre_web_hsts_preload_enabled: false
 
-# List of systemd services that Calibre-Web systemd service depends on
+# List of systemd services that the Calibre-Web systemd service depends on
 calibre_web_systemd_required_services_list: "{{ calibre_web_systemd_required_services_list_default + calibre_web_systemd_required_services_list_auto + calibre_web_systemd_required_services_list_custom }}"
 calibre_web_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
 calibre_web_systemd_required_services_list_auto: []
