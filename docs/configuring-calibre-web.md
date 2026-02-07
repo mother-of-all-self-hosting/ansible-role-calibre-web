@@ -81,7 +81,7 @@ The path to the binary is `/usr/bin/ebook-convert`. It needs to be specified in 
 
 ### Extending the configuration
 
-There are some additional things you may wish to configure about the component.
+There are some additional things you may wish to configure about the service.
 
 Take a look at:
 
