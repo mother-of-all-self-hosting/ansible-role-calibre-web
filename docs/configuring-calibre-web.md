@@ -101,7 +101,7 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 After running the command for installation, Calibre-Web becomes available at the specified hostname with `calibre_web_hostname` and `calibre_web_path_prefix` like `https://example.com/calibre-web`.
 
-You can log in to the instance with the default login credential of the admin account (username: `admin`, password: `admin123`).
+To get started, open the URL with a web browser, and log in to the instance with the administrator account (username: `admin`, password: `admin123`).
 
 On the initial configuration screen, enter `/books` as your Calibre library location.
 
