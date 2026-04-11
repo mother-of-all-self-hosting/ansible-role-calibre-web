@@ -63,7 +63,7 @@
   register: calibre_web_config_path_stat
 
 # We just want to notify the user. Deleting data is too destructive.
-- name: Notify if Calibre-Web internal database and config path remains
+- name: Inject the message about the remaining Calibre-Web internal database and config path
   when: calibre_web_config_path_stat.stat.exists | bool
   ansible.builtin.set_fact:
     devture_playbook_runtime_messages_list: |
@@ -81,7 +81,7 @@
   register: calibre_web_books_path_stat
 
 # We just want to notify the user. Deleting data is too destructive.
-- name: Notify if Calibre-Web preexisting calibre database path remains
+- name: Inject the message about the remaining Calibre-Web preexisting calibre database path
   when: calibre_web_books_path_stat.stat.exists | bool
   ansible.builtin.set_fact:
     devture_playbook_runtime_messages_list: |
