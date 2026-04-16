@@ -38,6 +38,27 @@
         path: "{{ calibre_web_container_image_self_build_src_files_path }}"
         state: absent
 
+    - name: Ensure Calibre-Web internal database and config path
+      ansible.builtin.command:
+        cmd: "rmdir {{ calibre_web_config_path }}"
+      register: calibre_web_config_path_deletion_result
+      changed_when: calibre_web_config_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Calibre-Web preexisting calibre database path
+      ansible.builtin.command:
+        cmd: "rmdir {{ calibre_web_books_path }}"
+      register: calibre_web_books_path_deletion_result
+      changed_when: calibre_web_books_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Calibre-Web base path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ calibre_web_base_path }}"
+      register: calibre_web_base_path_deletion_result
+      changed_when: calibre_web_base_path_deletion_result.rc == 0
+      failed_when: false
+
     - name: Ensure Calibre-Web container network does not exist
       when: calibre_web_container_network_deletion_enabled
       block:
