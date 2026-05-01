@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 noah
-# SPDX-FileCopyrightText: 2025 Suguru Hirahara
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -87,6 +87,9 @@ calibre_web_container_labels_traefik_priority: 0
 calibre_web_container_labels_traefik_entrypoints: web-secure
 calibre_web_container_labels_traefik_tls: "{{ calibre_web_container_labels_traefik_entrypoints != 'web' }}"
 calibre_web_container_labels_traefik_tls_certResolver: default  # noqa var-naming
+calibre_web_container_labels_traefik_middleware_basic_auth_enabled: false
+# See: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/
+calibre_web_container_labels_traefik_middleware_basic_auth_users: ""
 
 # Controls whether a compression middleware will be injected into the middlewares list.
 # This compression middleware is supposed to be defined elsewhere (using labels or a File provider, etc.) and is merely referenced by this router.

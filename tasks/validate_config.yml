@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 noah
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -19,14 +20,15 @@
 - name: Fail if required Calibre-Web settings not defined
   ansible.builtin.fail:
     msg: >-
-      You need to define a required configuration setting (`{{ item }}`).
-  when: "lookup('vars', item, default='') | string | length == 0"
+      You need to define a required configuration setting (`{{ item.name }}`).
+  when: "item.when | bool and lookup('vars', item.name, default='') | string | length == 0"
   with_items:
-    - calibre_web_uid
-    - calibre_web_gid
-    - calibre_web_hostname
-    - calibre_web_path_prefix
-    - calibre_web_container_network
+    - { "name": "calibre_web_uid", when: true }
+    - { "name": "calibre_web_gid", when: true }
+    - { "name": "calibre_web_hostname", when: true }
+    - { "name": "calibre_web_path_prefix", when: true }
+    - { "name": "calibre_web_container_network", when: true }
+    - { "name": "calibre_web_container_labels_traefik_middleware_basic_auth_users", when: "{{ calibre_web_container_labels_traefik_middleware_basic_auth_enabled }}" }
 
 - name: Validate Calibre-Web Traefik configuration
   when: calibre_web_container_labels_traefik_enabled | bool
