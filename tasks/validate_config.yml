@@ -16,7 +16,7 @@
     - { "old": "calibre_web_container_http_bind_port", "new": "calibre_web_container_http_host_bind_port" }
     - { "old": "calibre_web_environment_variables_extension", "new": "calibre_web_environment_variables_additional_variables" }
     - { "old": "calibre_web_http_header_content_permission_policy", "new": "calibre_web_http_header_permissions_policy" }
-    - { "old": "calibre_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
+    - { "old": "calibre_web_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
 
 - name: Fail if required Calibre-Web settings not defined
   ansible.builtin.fail:
