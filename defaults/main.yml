@@ -35,7 +35,6 @@ calibre_web_container_image_tag: "{{ calibre_web_version }}"
 calibre_web_container_image_registry_prefix: "{{ calibre_web_container_image_registry_prefix_upstream }}"
 calibre_web_container_image_registry_prefix_upstream: "{{ calibre_web_container_image_registry_prefix_upstream_default }}"
 calibre_web_container_image_registry_prefix_upstream_default: docker.io/
-calibre_web_container_image_force_pull: "{{ calibre_web_container_image.endswith(':latest') }}"
 
 calibre_web_container_image_self_build: false
 calibre_web_container_image_self_build_name: "linuxserver/calibre-web:{{ calibre_web_container_image_self_build_repo_version }}"
