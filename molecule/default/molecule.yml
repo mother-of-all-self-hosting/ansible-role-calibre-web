@@ -27,6 +27,10 @@ provisioner:
   inventory:
     group_vars:
       all:
+        # Helper variables
+        calibre_web_debug_service_enabled: false
+
+        # Variables for Calibre-Web
         calibre_web_uid: 1000
         calibre_web_gid: 1000
         calibre_web_hostname: calibre_web
