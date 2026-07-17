@@ -33,7 +33,8 @@ provisioner:
         # Variables for Calibre-Web
         calibre_web_uid: 1000
         calibre_web_gid: 1000
-        calibre_web_hostname: calibre_web
+        calibre_web_scheme: http
+        calibre_web_hostname: localhost
         calibre_web_container_labels_traefik_enabled: false
         calibre_web_container_http_host_bind_port: 8083
   env:
