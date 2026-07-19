@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Calibre-Web systemd service
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Wait for Calibre-Web service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: calibre-web.service
+      register: calibre_web_service
+      until: calibre_web_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert Calibre-Web service is active
+      ansible.builtin.assert:
+        that: calibre_web_service.status.ActiveState == 'active'
+        fail_msg: "calibre-web.service not active ({{ calibre_web_service.status.ActiveState }})"
+        success_msg: "calibre-web.service is active"
+
+    - name: Retrieve Calibre-Web service log for debugging
+      when: calibre_web_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu calibre-web.service
+      changed_when: false
+
+    - name: Wait for Calibre-Web HTTP endpoint to respond (up to 10m)
+      ansible.builtin.uri:
+        url: "http://localhost:8083/"
+        method: GET
+        status_code: [200, 302]
+        follow_redirects: none
+      register: calibre_web_endpoint
+      until: calibre_web_endpoint.status in [200, 302]
+      retries: 120
+      delay: 5
+
+    - name: Assert Calibre-Web HTTP endpoint responds
+      ansible.builtin.assert:
+        that: calibre_web_endpoint.status in [200, 302]
+        fail_msg: "Calibre-Web did not respond as expected ({{ calibre_web_endpoint.status | default('no response') }})"
+        success_msg: "Calibre-Web responded with {{ calibre_web_endpoint.status }}"
+
+    - name: Show Calibre-Web systemd service status summary
+      ansible.builtin.debug:
+        msg:
+          - "Calibre-Web systemd: {{ calibre_web_service.status.ActiveState }}"
+          - "Calibre-Web HTTP: {{ calibre_web_endpoint.status }}"

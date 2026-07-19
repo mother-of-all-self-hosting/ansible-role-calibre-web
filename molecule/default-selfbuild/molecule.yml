@@ -37,6 +37,9 @@ provisioner:
         calibre_web_hostname: localhost
         calibre_web_container_labels_traefik_enabled: false
         calibre_web_container_http_host_bind_port: 8083
+
+        # Test self-building
+        calibre_web_container_image_self_build: true
   env:
     # Workaround for https://github.com/ansible/molecule/issues/4391
     ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
