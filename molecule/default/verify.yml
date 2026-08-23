@@ -113,9 +113,12 @@
         fail_msg: >-
           Expected exactly one mount at {{ calibre_web_verify_library_path_in_container }},
           found {{ calibre_web_books_mounts | length }}
+        # Both messages are templated whatever the outcome, so this one must
+        # not reach for an element that only exists when the assertion holds -
+        # doing so replaces the failure above with a templating error.
         success_msg: >-
           The books directory is mounted at {{ calibre_web_verify_library_path_in_container }}
-          from {{ calibre_web_books_mounts | first }}
+          from {{ calibre_web_books_mounts | join(', ') }}
 
     - name: Copy the Calibre library schema
       ansible.builtin.copy:
@@ -198,11 +201,16 @@
         headers:
           Cookie: "{{ calibre_web_login_page.cookies_string }}"
         follow_redirects: none
-        status_code: [200, 302]
+        # 401 is what rejected credentials come back as, and it has to be
+        # listed here: an unlisted status fails the request itself, which
+        # would report a bare "Status code was 401" instead of the assertion
+        # below and its explanation.
+        status_code: [200, 302, 401]
       register: calibre_web_login
 
-    # A rejected sign-in re-renders the form with a 200, so the redirect is
-    # what separates working credentials from a broken settings database.
+    # A rejected sign-in comes back as a 401, or as a 200 re-rendering the
+    # form, so the redirect is what separates working credentials from a
+    # broken settings database.
     - name: Assert the Calibre-Web sign-in succeeded
       ansible.builtin.assert:
         that: calibre_web_login.status == 302
@@ -269,6 +277,11 @@
 
     # A rejected library path also comes back as a 200, carrying
     # "DB Location is not Valid" instead, so the message is the real signal.
+    #
+    # It is only a first signal, though: Calibre-Web accepts a metadata.db it
+    # cannot actually read here and does not complain until something asks it
+    # to serve from the library. The page assertions further down are what
+    # settle whether the library really works.
     - name: Assert Calibre-Web accepted the Calibre library
       ansible.builtin.assert:
         that: "'Database Settings updated' in calibre_web_wizard.content"
@@ -291,7 +304,10 @@
         url: "{{ calibre_web_verify_base_url }}/"
         method: GET
         follow_redirects: none
-        status_code: [200, 302]
+        # A library Calibre-Web cannot read answers 500 here. Listing it keeps
+        # that outcome flowing into the assertion below rather than failing
+        # the request with a bare "Status code was 500".
+        status_code: [200, 302, 500]
       register: calibre_web_root_anonymous
 
     - name: Assert Calibre-Web has left its first-run wizard
@@ -313,7 +329,7 @@
         headers:
           Cookie: "{{ calibre_web_session_cookie }}"
         follow_redirects: none
-        status_code: [200, 302]
+        status_code: [200, 302, 500]
         return_content: true
       register: calibre_web_library_page
 
@@ -335,7 +351,7 @@
         headers:
           Cookie: "{{ calibre_web_session_cookie }}"
         follow_redirects: none
-        status_code: [200, 302]
+        status_code: [200, 302, 500]
         return_content: true
       register: calibre_web_stats_page
 
