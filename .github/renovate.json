@@ -1,6 +1,19 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>mother-of-all-self-hosting/renovate-config#v1.0.0"
+    "github>mother-of-all-self-hosting/renovate-config#v1.0.0",
+    "github>mother-of-all-self-hosting/renovate-config//patch-automerge#v1.0.0"
+  ],
+  "packageRules": [
+    {
+      "description": [
+        "The linuxserver/calibre-web repository carries several tag families besides the Calibre-Web releases this role tracks: bare build numbers (1 through 102), Calibre desktop versions (5.29.0 through 6.0.0-calibre), a calendar-versioned run from 2021 (2021.10.05 and friends), legacy v3.x-ls1 tags, and an -ls### suffixed tag for every linuxserver.io rebuild.",
+        "Renovate has already been caught by this once: pull request #5 proposed an upgrade to '5' and had to be autoclosed.",
+        "Restricting the datasource to the 0.x.y releases is what keeps calibre_web_version trackable. A future Calibre-Web 1.0.0 would be filtered out by this too, and this rule would have to be revisited then."
+      ],
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["linuxserver/calibre-web"],
+      "allowedVersions": "/^0\\.[0-9]+\\.[0-9]+$/"
+    }
   ]
 }
