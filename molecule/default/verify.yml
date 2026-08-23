@@ -1,14 +1,39 @@
 # SPDX-FileCopyrightText: 2026 Suguru Hirahara
 # SPDX-FileCopyrightText: 2026 spatterlight
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Verify Calibre-Web systemd service
+- name: Verify Calibre-Web
   hosts: all
   become: true
   gather_facts: false
+
+  vars:
+    calibre_web_verify_base_url: "http://localhost:8083"
+    # The account the linuxserver.io image ships with. Calibre-Web keeps its
+    # own users in the settings database that the role provisions, so signing
+    # in at all proves that database was created and is usable.
+    calibre_web_verify_username: admin
+    calibre_web_verify_password: admin123
+    # Where the role mounts the books directory inside the container.
+    calibre_web_verify_library_path_in_container: /books
+    calibre_web_verify_schema_path_on_host: /tmp/calibre-web-molecule-library-schema.sql
+
   tasks:
+    # This play does not include the role, so its defaults are not in scope.
+    # Reading defaults/main.yml directly ties the version assertion below to
+    # the value that Renovate bumps, with nothing to keep in sync here.
+    #
+    # Only leaf literals may be read back out of this: most of that file is
+    # written in terms of other role variables, which are not defined in this
+    # play and would fail to template.
+    - name: Load the Calibre-Web role defaults
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: calibre_web_defaults
+
     - name: Wait for Calibre-Web service to become active (up to 180s)
       ansible.builtin.systemd:
         name: calibre-web.service
@@ -29,25 +54,401 @@
         cmd: journalctl -xeu calibre-web.service
       changed_when: false
 
-    - name: Wait for Calibre-Web HTTP endpoint to respond (up to 10m)
+    # Only a wait loop for the probes below. An answer here says the HTTP
+    # listener is up and nothing more - see the assertion that follows it.
+    - name: Wait for the Calibre-Web HTTP listener to answer (up to 10m)
       ansible.builtin.uri:
-        url: "http://localhost:8083/"
+        url: "{{ calibre_web_verify_base_url }}/"
         method: GET
-        status_code: [200, 302]
         follow_redirects: none
-      register: calibre_web_endpoint
-      until: calibre_web_endpoint.status in [200, 302]
+        status_code: [200, 302]
+      register: calibre_web_root_unconfigured
+      until: calibre_web_root_unconfigured.status in [200, 302]
       retries: 120
       delay: 5
 
-    - name: Assert Calibre-Web HTTP endpoint responds
+    # The honest starting point, and the reason the rest of this file exists.
+    #
+    # A Calibre-Web that has never been given a Calibre library answers every
+    # single URL with a redirect to its first-run "Database Configuration"
+    # wizard - `/`, `/admin/`, even the About page. A plain `docker run` of the
+    # image reaches this exact state with no role involved, so accepting a
+    # 200-or-302 from `/` would pass just as happily for a deployment that
+    # cannot serve a single book.
+    - name: Assert Calibre-Web starts out at its first-run wizard
       ansible.builtin.assert:
-        that: calibre_web_endpoint.status in [200, 302]
-        fail_msg: "Calibre-Web did not respond as expected ({{ calibre_web_endpoint.status | default('no response') }})"
-        success_msg: "Calibre-Web responded with {{ calibre_web_endpoint.status }}"
+        that:
+          - calibre_web_root_unconfigured.status == 302
+          - "'/admin/dbconfig' in calibre_web_root_unconfigured.location"
+        fail_msg: >-
+          Expected an unconfigured Calibre-Web to redirect to /admin/dbconfig, got
+          {{ calibre_web_root_unconfigured.status }} -> {{ calibre_web_root_unconfigured.location | default('no Location') }}
+        success_msg: "Calibre-Web is up and waiting at its first-run wizard"
 
-    - name: Show Calibre-Web systemd service status summary
+    # Reading the mount back off the container, rather than recomputing the
+    # host path from the role's variables, both locates the directory to seed
+    # and proves the role actually wired the books volume through to /books.
+    - name: Inspect the Calibre-Web container
+      ansible.builtin.command:
+        argv:
+          - docker
+          - inspect
+          - "{{ calibre_web_defaults.calibre_web_identifier }}"
+      register: calibre_web_container_inspect
+      changed_when: false
+
+    - name: Determine the host path of the Calibre-Web books directory
+      ansible.builtin.set_fact:
+        calibre_web_books_mounts: >-
+          {{
+            (calibre_web_container_inspect.stdout | from_json)[0].Mounts
+            | selectattr('Destination', 'equalto', calibre_web_verify_library_path_in_container)
+            | map(attribute='Source')
+            | list
+          }}
+
+    - name: Assert the books directory is mounted into the Calibre-Web container
+      ansible.builtin.assert:
+        that: calibre_web_books_mounts | length == 1
+        fail_msg: >-
+          Expected exactly one mount at {{ calibre_web_verify_library_path_in_container }},
+          found {{ calibre_web_books_mounts | length }}
+        success_msg: >-
+          The books directory is mounted at {{ calibre_web_verify_library_path_in_container }}
+          from {{ calibre_web_books_mounts | first }}
+
+    - name: Copy the Calibre library schema
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/molecule/files/calibre-library-schema.sql"
+        dest: "{{ calibre_web_verify_schema_path_on_host }}"
+        mode: "0644"
+
+    # Calibre-Web will not create a library for itself, so the test supplies an
+    # empty one. Without it the wizard below rejects the path outright
+    # ("DB Location is not Valid") and the application stays unreachable.
+    - name: Create an empty Calibre library for Calibre-Web to open
+      ansible.builtin.command:
+        argv:
+          - python3
+          - -c
+          - |
+            import sqlite3
+            import sys
+            import uuid
+
+            schema_path, database_path = sys.argv[1], sys.argv[2]
+
+            with open(schema_path) as schema_file:
+                schema = schema_file.read()
+
+            connection = sqlite3.connect(database_path)
+            connection.executescript(schema)
+            connection.execute('INSERT INTO library_id (id, uuid) VALUES (1, ?)', (str(uuid.uuid4()),))
+            connection.commit()
+            connection.close()
+          - "{{ calibre_web_verify_schema_path_on_host }}"
+          - "{{ calibre_web_books_mounts | first }}/metadata.db"
+      args:
+        creates: "{{ calibre_web_books_mounts | first }}/metadata.db"
+
+    - name: Ensure Calibre-Web can read its library
+      ansible.builtin.file:
+        path: "{{ calibre_web_books_mounts | first }}/metadata.db"
+        owner: "{{ calibre_web_uid }}"
+        group: "{{ calibre_web_gid }}"
+        mode: "0640"
+
+    # Calibre-Web protects the wizard behind a sign-in, and its session cookie
+    # is replaced on sign-in, so every request from here on carries the cookie
+    # the previous one handed back. Redirects are never followed: the cookie
+    # would not survive them, and the status code is itself worth asserting on.
+    - name: Retrieve the Calibre-Web sign-in page
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/login"
+        method: GET
+        follow_redirects: none
+        status_code: [200, 302]
+        return_content: true
+      register: calibre_web_login_page
+
+    - name: Assert the Calibre-Web sign-in page is served
+      ansible.builtin.assert:
+        that:
+          - calibre_web_login_page.status == 200
+          - "'Calibre-Web | Login' in calibre_web_login_page.content"
+        fail_msg: "The Calibre-Web sign-in page did not render (status {{ calibre_web_login_page.status }})"
+        success_msg: "The Calibre-Web sign-in page is served"
+
+    # Flask hands out a CSRF token per session and rejects any form that does
+    # not carry the one belonging to the cookie the form was served with.
+    - name: Extract the CSRF token of the Calibre-Web sign-in form
+      ansible.builtin.set_fact:
+        calibre_web_login_csrf_token: >-
+          {{ calibre_web_login_page.content | regex_search('name="csrf_token" value="([^"]+)"', '\1') | first }}
+
+    - name: Sign in to Calibre-Web
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/login"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          username: "{{ calibre_web_verify_username }}"
+          password: "{{ calibre_web_verify_password }}"
+          csrf_token: "{{ calibre_web_login_csrf_token }}"
+        headers:
+          Cookie: "{{ calibre_web_login_page.cookies_string }}"
+        follow_redirects: none
+        status_code: [200, 302]
+      register: calibre_web_login
+
+    # A rejected sign-in re-renders the form with a 200, so the redirect is
+    # what separates working credentials from a broken settings database.
+    - name: Assert the Calibre-Web sign-in succeeded
+      ansible.builtin.assert:
+        that: calibre_web_login.status == 302
+        fail_msg: "Calibre-Web rejected the '{{ calibre_web_verify_username }}' credentials (status {{ calibre_web_login.status }})"
+        success_msg: "Calibre-Web signed '{{ calibre_web_verify_username }}' in"
+
+    # The sign-in answers with a redirect, and `uri` parses cookies into
+    # `cookies`/`cookies_string` only for 2xx responses - anything else travels
+    # its error path, which hands back the raw headers and nothing more. The
+    # replacement session therefore has to be read out of `set_cookie` here.
+    - name: Determine the Calibre-Web session established by the sign-in
+      ansible.builtin.set_fact:
+        calibre_web_session_cookie: "{{ calibre_web_login.set_cookie | regex_search('session=[^;]+') }}"
+
+    - name: Assert the sign-in established a session
+      ansible.builtin.assert:
+        # A regular expression, anchored at the start by `match`.
+        that: calibre_web_session_cookie is match('session=.+')
+        fail_msg: "Calibre-Web did not hand back a session cookie: {{ calibre_web_login.set_cookie | default('no Set-Cookie') }}"
+        success_msg: "Calibre-Web handed back a session cookie"
+
+    - name: Retrieve the Calibre-Web database configuration wizard
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/admin/dbconfig"
+        method: GET
+        headers:
+          Cookie: "{{ calibre_web_session_cookie }}"
+        follow_redirects: none
+        status_code: [200, 302]
+        return_content: true
+      register: calibre_web_wizard_page
+
+    - name: Assert the Calibre-Web database configuration wizard is reachable
+      ansible.builtin.assert:
+        that:
+          - calibre_web_wizard_page.status == 200
+          - "'Calibre-Web | Database Configuration' in calibre_web_wizard_page.content"
+        fail_msg: "The database configuration wizard did not render (status {{ calibre_web_wizard_page.status }})"
+        success_msg: "The database configuration wizard is reachable"
+
+    - name: Extract the CSRF token of the Calibre-Web database configuration form
+      ansible.builtin.set_fact:
+        calibre_web_wizard_csrf_token: >-
+          {{ calibre_web_wizard_page.content | regex_search('name="csrf_token" value="([^"]+)"', '\1') | first }}
+
+    # Walking the wizard is what turns a running container into a usable
+    # application: Calibre-Web opens the library, validates its schema and
+    # writes the location into its settings database.
+    - name: Point Calibre-Web at the Calibre library
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/admin/dbconfig"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          csrf_token: "{{ calibre_web_wizard_csrf_token }}"
+          config_calibre_dir: "{{ calibre_web_verify_library_path_in_container }}"
+        headers:
+          Cookie: "{{ calibre_web_session_cookie }}"
+        follow_redirects: none
+        status_code: [200, 302]
+        return_content: true
+      register: calibre_web_wizard
+      changed_when: true
+
+    # A rejected library path also comes back as a 200, carrying
+    # "DB Location is not Valid" instead, so the message is the real signal.
+    - name: Assert Calibre-Web accepted the Calibre library
+      ansible.builtin.assert:
+        that: "'Database Settings updated' in calibre_web_wizard.content"
+        fail_msg: "Calibre-Web did not accept the library at {{ calibre_web_verify_library_path_in_container }}"
+        success_msg: "Calibre-Web accepted the library at {{ calibre_web_verify_library_path_in_container }}"
+
+    # The wizard answers with a 200, so this one does come back parsed - but
+    # only when Calibre-Web chose to rotate the session, hence the fallback.
+    - name: Set the Calibre-Web session cookie to use from here on
+      ansible.builtin.set_fact:
+        calibre_web_session_cookie: >-
+          {{ calibre_web_wizard.cookies_string | default('', true) or calibre_web_session_cookie }}
+
+    # The same request that opened this file, asked again. An unconfigured
+    # Calibre-Web sends anonymous callers to /admin/dbconfig; a configured one
+    # sends them to the sign-in page instead. No cookie is used here on
+    # purpose, so this cannot be satisfied by the session established above.
+    - name: Retrieve the Calibre-Web root as an anonymous caller
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/"
+        method: GET
+        follow_redirects: none
+        status_code: [200, 302]
+      register: calibre_web_root_anonymous
+
+    - name: Assert Calibre-Web has left its first-run wizard
+      ansible.builtin.assert:
+        that:
+          - calibre_web_root_anonymous.status == 302
+          - "'/login' in calibre_web_root_anonymous.location"
+        fail_msg: >-
+          Calibre-Web is still at its first-run wizard:
+          {{ calibre_web_root_anonymous.status }} -> {{ calibre_web_root_anonymous.location | default('no Location') }}
+        success_msg: "Calibre-Web has left its first-run wizard"
+
+    # The library page itself, rendered out of the database that was just
+    # attached. This is the page a user of this role came for.
+    - name: Retrieve the Calibre-Web library page
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/"
+        method: GET
+        headers:
+          Cookie: "{{ calibre_web_session_cookie }}"
+        follow_redirects: none
+        status_code: [200, 302]
+        return_content: true
+      register: calibre_web_library_page
+
+    - name: Assert Calibre-Web serves its library
+      ansible.builtin.assert:
+        that:
+          - calibre_web_library_page.status == 200
+          - "'Calibre-Web | Books' in calibre_web_library_page.content"
+        fail_msg: "Calibre-Web did not serve its library page (status {{ calibre_web_library_page.status }})"
+        success_msg: "Calibre-Web serves its library page"
+
+    # Calibre-Web's own About page. It is only reachable once the library is
+    # attached, which is the other reason the wizard had to be walked: there is
+    # no version to read off an instance that never got that far.
+    - name: Retrieve the Calibre-Web statistics page
+      ansible.builtin.uri:
+        url: "{{ calibre_web_verify_base_url }}/stats"
+        method: GET
+        headers:
+          Cookie: "{{ calibre_web_session_cookie }}"
+        follow_redirects: none
+        status_code: [200, 302]
+        return_content: true
+      register: calibre_web_stats_page
+
+    - name: Assert the Calibre-Web statistics page is served
+      ansible.builtin.assert:
+        that:
+          - calibre_web_stats_page.status == 200
+          - "'Calibre-Web | Statistics' in calibre_web_stats_page.content"
+        fail_msg: "The Calibre-Web statistics page did not render (status {{ calibre_web_stats_page.status }})"
+        success_msg: "The Calibre-Web statistics page is served"
+
+    - name: Determine the version reported by the running Calibre-Web
+      ansible.builtin.set_fact:
+        calibre_web_running_version: >-
+          {{
+            calibre_web_stats_page.content
+            | regex_search('<th>Calibre Web</th>\s*<td>([^<]+)</td>', '\1')
+            | first | trim
+          }}
+
+    # Tying the running version to `calibre_web_version` is what makes this
+    # scenario a test of the value that Renovate bumps: a bump to a tag that
+    # does not exist, or to an image that cannot serve, cannot pass here.
+    #
+    # Self-built images are exempt. They are built from the linuxserver.io
+    # Dockerfile's default branch rather than from `calibre_web_version`, so
+    # what they report has nothing to do with the role's version variable.
+    - name: Assert the running Calibre-Web is the version the role asks for
+      when: not (calibre_web_container_image_self_build | default(false) | bool)
+      ansible.builtin.assert:
+        # The reported version has the build's commit and date appended
+        # ("0.6.27 - c3756a90... - 2026-08-08T16:13:10+02:00"), and
+        # linuxserver.io rebuilds can carry an `-ls###` suffix, hence the
+        # prefix match rather than an equality check.
+        that: calibre_web_running_version is match(calibre_web_defaults.calibre_web_version | regex_escape)
+        fail_msg: >-
+          Calibre-Web reports version {{ calibre_web_running_version | default('none') }},
+          but the role asks for {{ calibre_web_defaults.calibre_web_version }}
+        success_msg: "Calibre-Web reports version {{ calibre_web_running_version }}"
+
+    # `calibre_web_uid`/`calibre_web_gid` travel through templates/env.j2 as
+    # PUID/PGID, into the container's environment file, and are acted on by the
+    # image's init before it starts the application. Checking the identity of
+    # the process that is actually serving proves that whole chain, which
+    # reading the rendered environment file back would not.
+    # No shell and no pgrep: with `pgrep -f` the shell running it matches its
+    # own command line, so the process table is read straight out and the
+    # application process picked from it here instead.
+    - name: List the processes running inside the Calibre-Web container
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ calibre_web_defaults.calibre_web_identifier }}"
+          - ps
+          - -e
+          - -o
+          - uid=,gid=,args=
+      register: calibre_web_process_table
+      changed_when: false
+
+    - name: Select the Calibre-Web application process
+      ansible.builtin.set_fact:
+        # A regular expression, hence the escaped dot.
+        calibre_web_application_processes: >-
+          {{ calibre_web_process_table.stdout_lines | select('search', 'cps\.py') | list }}
+
+    - name: Assert exactly one Calibre-Web application process is running
+      ansible.builtin.assert:
+        that: calibre_web_application_processes | length == 1
+        fail_msg: >-
+          Expected one cps.py process in the container, found
+          {{ calibre_web_application_processes | length }}
+        success_msg: "One Calibre-Web application process is running"
+
+    - name: Assert Calibre-Web runs as the configured user and group
+      ansible.builtin.assert:
+        that:
+          - (calibre_web_application_processes | first).split()[0] | int == calibre_web_uid | int
+          - (calibre_web_application_processes | first).split()[1] | int == calibre_web_gid | int
+        fail_msg: >-
+          Calibre-Web runs as {{ (calibre_web_application_processes | first).split()[0:2] | join(':') }},
+          expected {{ calibre_web_uid }}:{{ calibre_web_gid }}
+        success_msg: "Calibre-Web runs as {{ calibre_web_uid }}:{{ calibre_web_gid }}"
+
+    # The other half of templates/env.j2: a value with no dedicated plumbing,
+    # which reaches the container only because the environment file was
+    # rendered and handed to `docker create`.
+    - name: Determine the timezone the Calibre-Web container was given
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ calibre_web_defaults.calibre_web_identifier }}"
+          - printenv
+          - TZ
+      register: calibre_web_container_timezone
+      changed_when: false
+
+    - name: Assert the configured timezone reached the Calibre-Web container
+      ansible.builtin.assert:
+        that: calibre_web_container_timezone.stdout | trim == calibre_web_environment_variables_tz
+        fail_msg: >-
+          The Calibre-Web container has TZ={{ calibre_web_container_timezone.stdout | trim }},
+          expected {{ calibre_web_environment_variables_tz }}
+        success_msg: "The Calibre-Web container has TZ={{ calibre_web_environment_variables_tz }}"
+
+    - name: Show Calibre-Web verification summary
       ansible.builtin.debug:
         msg:
           - "Calibre-Web systemd: {{ calibre_web_service.status.ActiveState }}"
-          - "Calibre-Web HTTP: {{ calibre_web_endpoint.status }}"
+          - "Calibre-Web version: {{ calibre_web_running_version }}"
+          - "Library mounted from: {{ calibre_web_books_mounts | first }}"
+          - "Library page: {{ calibre_web_library_page.status }}"
+          - "Running as: {{ calibre_web_uid }}:{{ calibre_web_gid }}"
+          - "Timezone: {{ calibre_web_container_timezone.stdout | trim }}"

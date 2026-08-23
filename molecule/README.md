@@ -49,6 +49,10 @@ Currently these testing scenarios are available:
 
 Tests a standard Calibre-Web installation.
 
+Calibre-Web does not serve anything until it has been given a Calibre library: without one it answers every URL, including its own About page, with a redirect to its first-run "Database Configuration" wizard, and it will not create a library for itself. Merely reaching the HTTP listener therefore says very little about the deployment.
+
+So the verification seeds an empty Calibre library (`molecule/files/calibre-library-schema.sql`, the schema Calibre-Web's own models describe) into the directory the role mounts at `/books`, walks the wizard the way a user would, and only then asserts that Calibre-Web serves its library page and reports the version the role asks for.
+
 ### `default-selfbuild`
 
 Tests a standard Calibre-Web installation with self-building the container image.

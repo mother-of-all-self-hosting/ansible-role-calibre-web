@@ -32,8 +32,15 @@ provisioner:
         calibre_web_debug_service_enabled: false
 
         # Variables for Calibre-Web
-        calibre_web_uid: 1000
-        calibre_web_gid: 1000
+        #
+        # The user and the timezone are deliberately not the values the role
+        # or the container image would arrive at on their own (1000 and 911
+        # respectively for the user, Etc/UTC for the timezone), so that the
+        # verification can tell a value that travelled all the way into the
+        # running container from one that merely happens to match a default.
+        calibre_web_uid: 1042
+        calibre_web_gid: 1042
+        calibre_web_environment_variables_tz: Europe/Sofia
         calibre_web_scheme: http
         calibre_web_hostname: localhost
         calibre_web_container_labels_traefik_enabled: false
