@@ -57,6 +57,8 @@ So the verification seeds an empty Calibre library (`molecule/files/calibre-libr
 
 Tests a standard Calibre-Web installation with self-building the container image.
 
+Since only the origin of the container image differs, this scenario reuses the `default` scenario's playbooks instead of keeping its own copies. The assertion tying the running version to `calibre_web_version` is skipped here, because a self-built image is built from the linuxserver.io Dockerfile's default branch rather than from that variable.
+
 ## Running
 
 By default it is configured to run the scenarios on Ubuntu 26.04.
