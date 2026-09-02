@@ -80,15 +80,15 @@ jobs:
   # from the tag that `calibre_web_version` points at, so it only
   # changes behavior when that version changes, and it takes the better part of
   # an hour. Branches are therefore gated on a version bump in
-  # defaults/main.yml. There is no main-branch run at all: automerge only merges
-  # branches that are already green, so a main-side rerun would be redundant.
+  # defaults/main.yml. There is no master-branch run at all: automerge only merges
+  # branches that are already green, so a master-side rerun would be redundant.
   selfbuild-gate:
     name: Check whether the self-build scenario needs to run
     runs-on: ubuntu-latest
 
     if: >-
       github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+      || (github.event_name == 'push' && github.ref != 'refs/heads/master')
       || (
         github.event_name == 'pull_request'
         && github.event.pull_request.head.repo.full_name != github.repository
@@ -103,7 +103,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check for a version bump against main
+      - name: Check for a version bump against master
         id: gate
         run: |
           if [ "${{ github.event_name }}" = 'workflow_dispatch' ]; then
@@ -111,12 +111,12 @@ jobs:
             echo 'Manually dispatched - running the self-build scenario'
             exit 0
           fi
-          if git diff origin/main...HEAD -- defaults/main.yml | grep -qE '^[+-][^+-]*_version:'; then
+          if git diff origin/master...HEAD -- defaults/main.yml | grep -qE '^[+-][^+-]*_version:'; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
-            echo 'A version changed relative to main - running the self-build scenario'
+            echo 'A version changed relative to master - running the self-build scenario'
           else
             echo 'run=false' >> "$GITHUB_OUTPUT"
-            echo 'No version changed relative to main - skipping the self-build scenario'
+            echo 'No version changed relative to master - skipping the self-build scenario'
           fi
 
   molecule-selfbuild:
