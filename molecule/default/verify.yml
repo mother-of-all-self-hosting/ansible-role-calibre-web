@@ -383,10 +383,8 @@
         # linuxserver.io rebuilds can carry an `-ls###` suffix, hence the
         # prefix match rather than an equality check.
         that: calibre_web_running_version is match(calibre_web_defaults.calibre_web_version | regex_escape)
-        fail_msg: >-
-          Calibre-Web reports version {{ calibre_web_running_version | default('none') }},
-          but the role asks for {{ calibre_web_defaults.calibre_web_version }}
-        success_msg: "Calibre-Web reports version {{ calibre_web_running_version }}"
+        fail_msg: "Calibre-Web reports {{ calibre_web_running_version | default('none') }}, expected {{ calibre_web_defaults.calibre_web_version }}"
+        success_msg: "Calibre-Web reports {{ calibre_web_running_version }}"
 
     # `calibre_web_uid`/`calibre_web_gid` travel through templates/env.j2 as
     # PUID/PGID, into the container's environment file, and are acted on by the
