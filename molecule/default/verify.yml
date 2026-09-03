@@ -372,11 +372,7 @@
             | first | trim
           }}
 
-    # Tying the running version to `calibre_web_version` is what makes this
-    # scenario a test of the value that Renovate bumps: a bump to a tag that
-    # does not exist, or to an image that cannot serve, cannot pass here.
-    #
-    # Self-built images are exempt. They are built from the linuxserver.io
+    # Note that self-built images are built from the linuxserver.io
     # Dockerfile's default branch rather than from `calibre_web_version`, so
     # what they report has nothing to do with the role's version variable.
     - name: Assert the running Calibre-Web is the version this role installs
