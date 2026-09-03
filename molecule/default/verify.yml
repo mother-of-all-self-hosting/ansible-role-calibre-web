@@ -453,7 +453,7 @@
           expected {{ calibre_web_environment_variables_tz }}
         success_msg: "The Calibre-Web container has TZ={{ calibre_web_environment_variables_tz }}"
 
-    - name: Show Calibre-Web verification summary
+    - name: Show the Calibre-Web verification summary
       ansible.builtin.debug:
         msg:
           - "Calibre-Web systemd: {{ calibre_web_service.status.ActiveState }}"
