@@ -379,7 +379,7 @@
     # Self-built images are exempt. They are built from the linuxserver.io
     # Dockerfile's default branch rather than from `calibre_web_version`, so
     # what they report has nothing to do with the role's version variable.
-    - name: Assert the running Calibre-Web is the version the role asks for
+    - name: Assert the running Calibre-Web is the version this role installs
       when: not (calibre_web_container_image_self_build | default(false) | bool)
       ansible.builtin.assert:
         # The reported version has the build's commit and date appended
