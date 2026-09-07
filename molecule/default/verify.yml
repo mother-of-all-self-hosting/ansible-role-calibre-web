@@ -359,7 +359,7 @@
         fail_msg: "The Calibre-Web statistics page did not render (status {{ calibre_web_stats_page.status }})"
         success_msg: "The Calibre-Web statistics page is served"
 
-    - name: Determine the version reported by the running Calibre-Web
+    - name: Determine the version of the running Calibre-Web
       ansible.builtin.set_fact:
         calibre_web_running_version: >-
           {{
