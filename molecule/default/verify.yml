@@ -90,14 +90,14 @@
           - docker
           - inspect
           - "{{ calibre_web_defaults.calibre_web_identifier }}"
-      register: calibre_web_container_inspect
+      register: calibre_web_container_raw
       changed_when: false
 
     - name: Determine the host path of the Calibre-Web books directory
       ansible.builtin.set_fact:
         calibre_web_books_mounts: >-
           {{
-            (calibre_web_container_inspect.stdout | from_json)[0].Mounts
+            (calibre_web_container_raw.stdout | from_json)[0].Mounts
             | selectattr('Destination', 'equalto', calibre_web_verify_library_path_in_container)
             | map(attribute='Source')
             | list
