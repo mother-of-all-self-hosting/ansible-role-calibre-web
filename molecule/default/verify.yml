@@ -92,10 +92,7 @@
     # and proves the role actually wired the books volume through to /books.
     - name: Inspect the Calibre-Web container
       ansible.builtin.command:
-        argv:
-          - docker
-          - inspect
-          - "{{ calibre_web_defaults.calibre_web_identifier }}"
+        cmd: "docker container inspect {{ calibre_web_defaults.calibre_web_identifier }}"
       register: calibre_web_container_raw
       changed_when: false
 
@@ -438,12 +435,7 @@
     # rendered and handed to `docker create`.
     - name: Determine the timezone the Calibre-Web container was given
       ansible.builtin.command:
-        argv:
-          - docker
-          - exec
-          - "{{ calibre_web_defaults.calibre_web_identifier }}"
-          - printenv
-          - TZ
+        cmd: "docker exec {{ calibre_web_defaults.calibre_web_identifier }} printenv TZ"
       register: calibre_web_container_timezone
       changed_when: false
 
