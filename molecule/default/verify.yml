@@ -53,7 +53,7 @@
     - name: Retrieve the Calibre-Web systemd service log for debugging
       when: calibre_web_debug_service_enabled | bool
       ansible.builtin.command:
-        cmd: journalctl -xeu calibre-web.service
+        cmd: journalctl --no-pager --output=cat --unit=calibre-web.service
       changed_when: false
 
     # Only a wait loop for the probes below. An answer here says the HTTP
