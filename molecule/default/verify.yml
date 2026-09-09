@@ -395,14 +395,9 @@
     # application process picked from it here instead.
     - name: List the processes running inside the Calibre-Web container
       ansible.builtin.command:
-        argv:
-          - docker
-          - exec
-          - "{{ calibre_web_defaults.calibre_web_identifier }}"
-          - ps
-          - -e
-          - -o
-          - uid=,gid=,args=
+        cmd: >-
+          docker exec {{ calibre_web_defaults.calibre_web_identifier }}
+          ps -e -o uid=,gid=,args=
       register: calibre_web_process_table
       changed_when: false
 
