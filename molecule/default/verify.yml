@@ -21,6 +21,9 @@
     calibre_web_verify_library_path_in_container: /books
     calibre_web_verify_schema_path_on_host: /tmp/calibre-web-molecule-library-schema.sql
 
+    calibre_web_verify_units:
+      - calibre-web.service
+
   tasks:
     - name: Verify that Calibre-Web works
       block:
@@ -32,13 +35,14 @@
             file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
             name: calibre_web_defaults
 
-        - name: Wait for the Calibre-Web systemd service to become active (up to 180s)
+        - name: Wait for the Calibre-Web systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: calibre-web.service
-          register: calibre_web_service
-          until: calibre_web_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: calibre_web_services
+          until: calibre_web_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ calibre_web_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -46,17 +50,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the Calibre-Web systemd service is active
+        - name: Assert the Calibre-Web systemd services are active
           ansible.builtin.assert:
-            that: calibre_web_service.status.ActiveState == 'active'
-            fail_msg: "calibre-web.service is not active ({{ calibre_web_service.status.ActiveState }})"
-            success_msg: "calibre-web.service is active"
+            that: calibre_web_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(calibre_web_verify_units | zip(calibre_web_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the Calibre-Web systemd service log for debugging
+        - name: Retrieve the Calibre-Web systemd services log for debugging
           when: calibre_web_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=calibre-web.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ calibre_web_verify_units }}"
 
         # Only a wait loop for the probes below. An answer here says the HTTP
         # listener is up and nothing more - see the assertion that follows it.
@@ -447,7 +454,7 @@
         - name: Show the Calibre-Web verification summary
           ansible.builtin.debug:
             msg:
-              - "Calibre-Web systemd: {{ calibre_web_service.status.ActiveState }}"
+              - "Calibre-Web systemd: {% for unit, state in calibre_web_verify_units | zip(calibre_web_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Calibre-Web version: {{ calibre_web_running_version }}"
               - "Library mounted from: {{ calibre_web_books_mounts | first }}"
               - "Library page: {{ calibre_web_library_page.status }}"
