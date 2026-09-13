@@ -101,7 +101,7 @@
         # and proves the role actually wired the books volume through to /books.
         - name: Inspect the Calibre-Web container
           ansible.builtin.command:
-            cmd: "docker container inspect {{ calibre_web_defaults.calibre_web_identifier }}"
+            cmd: docker container inspect calibre-web
           register: calibre_web_container_raw
           changed_when: false
 
