@@ -38,6 +38,7 @@ provisioner:
       all:
         # Helper variables
         calibre_web_debug_service_enabled: false
+        calibre_web_restarts_check_enabled: true
 
         # Variables for Calibre-Web
         #
