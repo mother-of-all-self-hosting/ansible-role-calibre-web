@@ -51,7 +51,10 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% for arg in calibre_web_container_extra_arguments %}
       {{ arg }} \
       {% endfor %}
-      {{ calibre_web_container_image_self_build_name if calibre_web_container_image_self_build else calibre_web_container_image }}
+      {{ calibre_web_container_image_self_build_name if calibre_web_container_image_self_build else calibre_web_container_image }} \
+      {% for arg in calibre_web_process_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
 
 {% for network in calibre_web_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ calibre_web_identifier }}
