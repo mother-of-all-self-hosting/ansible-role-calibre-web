@@ -40,7 +40,7 @@ write_defaults() {
 		---
 		calibre_web_identifier: calibre-web
 
-		# renovate: datasource=docker depName=linuxserver/calibre-web
+		# renovate: datasource=docker depName=ghcr.io/linuxserver/calibre-web
 		# calibre_web_version: 0.6.24
 		calibre_web_version: $1
 
