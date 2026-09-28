@@ -24,7 +24,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_sh }} -c '{{ calibre_we
 
 {#
   PUID and PGID are specified on env.j2 to run the container as calibre_web_uid:calibre_web_gid
-  See: https://github.com/linuxserver/docker-calibre-web/blob/master/README.md#user--group-identifiers
+  See: https://docs.linuxserver.io/images/docker-calibre-web/#user-group-identifiers
 #}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --rm \

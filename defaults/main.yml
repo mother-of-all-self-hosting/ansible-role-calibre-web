@@ -242,7 +242,7 @@ calibre_web_environment_variables_conversion_ability_enabled: false
 
 # Additional environment variables to pass to the Calibre-Web container.
 # You can use this to further influence the default configuration.
-# Check https://github.com/linuxserver/docker-calibre-web to enable Calibre E-Book Converter
+# Check https://docs.linuxserver.io/images/docker-calibre-web/ to enable Calibre E-Book Converter
 #
 # Example:
 # calibre_web_environment_variables_additional_variables: |
