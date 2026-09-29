@@ -11,7 +11,7 @@
   gather_facts: false
 
   vars:
-    calibre_web_verify_base_url: "http://localhost:8083"
+    calibre_web_verify_base_url: "http://localhost:{{ calibre_web_container_http_port }}"
     # The account the linuxserver.io image ships with. Calibre-Web keeps its
     # own users in the settings database that the role provisions, so signing
     # in at all proves that database was created and is usable.
@@ -20,6 +20,16 @@
     # Where the role mounts the books directory inside the container.
     calibre_web_verify_library_path_in_container: /books
     calibre_web_verify_schema_path_on_host: /tmp/calibre-web-molecule-library-schema.sql
+
+    # The unusual values the scenario configures the role with. Written down
+    # here rather than read back out of the inventory, so that a verify run
+    # compares the running container against something stated, not against
+    # whatever the scenario happens to say at the time.
+    calibre_web_expected_uid: 1717
+    calibre_web_expected_gid: 1717
+    calibre_web_expected_hostname: calibre-web.molecule.local
+    calibre_web_expected_timezone: Asia/Tokyo
+    calibre_web_expected_timezone_abbreviation: JST
 
     calibre_web_verify_units:
       - calibre-web.service
@@ -96,37 +106,134 @@
               {{ calibre_web_root_unconfigured.status }} -> {{ calibre_web_root_unconfigured.location | default('no Location') }}
             success_msg: "Calibre-Web is up and waiting at its first-run wizard"
 
-        # Reading the mount back off the container, rather than recomputing the
-        # host path from the role's variables, both locates the directory to seed
-        # and proves the role actually wired the books volume through to /books.
         - name: Inspect the Calibre-Web container
           ansible.builtin.command:
             cmd: docker container inspect calibre-web
           register: calibre_web_container_raw
           changed_when: false
 
-        - name: Determine the host path of the Calibre-Web books directory
+        - name: Inspect the Calibre-Web container
           ansible.builtin.set_fact:
-            calibre_web_books_mounts: >-
-              {{
-                (calibre_web_container_raw.stdout | from_json)[0].Mounts
-                | selectattr('Destination', 'equalto', calibre_web_verify_library_path_in_container)
-                | map(attribute='Source')
-                | list
-              }}
+            calibre_web_container: "{{ (calibre_web_container_raw.stdout | from_json)[0] }}"
 
-        - name: Assert the books directory is mounted into the Calibre-Web container
+        # ------------------------------------------------------------------
+        # What the role told Docker to run
+        # ------------------------------------------------------------------
+
+        - name: Collect the mounts the role asked for
+          ansible.builtin.set_fact:
+            calibre_web_books_mount: "{{ calibre_web_container.Mounts | selectattr('Destination', 'equalto', calibre_web_verify_library_path_in_container) | list }}"
+            calibre_web_config_mount: "{{ calibre_web_container.Mounts | selectattr('Destination', 'equalto', '/config') | list }}"
+
+        - name: Assert that the books directory data path is mounted
           ansible.builtin.assert:
-            that: calibre_web_books_mounts | length == 1
+            that:
+              - calibre_web_books_mount | length == 1
+              - calibre_web_books_mount[0].Type == 'bind'
+              - calibre_web_books_mount[0].RW
+            fail_msg: "The role's data path is not bind-mounted at {{ calibre_web_verify_library_path_in_container }}: {{ calibre_web_container.Mounts }}"
+            success_msg: "{{ calibre_web_config_mount[0].Source | default('?') }} is bind-mounted at {{ calibre_web_verify_library_path_in_container }}"
+
+        - name: Assert that the role's data path is mounted at /config
+          ansible.builtin.assert:
+            that:
+              - calibre_web_config_mount | length == 1
+              - calibre_web_config_mount[0].Type == 'bind'
+              - calibre_web_config_mount[0].RW
+            fail_msg: "The role's data path is not bind-mounted at /config: {{ calibre_web_container.Mounts }}"
+            success_msg: "{{ calibre_web_config_mount[0].Source | default('?') }} is bind-mounted at /config"
+
+        # Unlike other services whose container image is provided by linuxserver.io,
+        # Calibre-Web's container does not support running as non-root user. Values specified
+        # with PUID and PGID are applied after the container is started.
+        - name: Assert that the container itself runs as root
+          ansible.builtin.assert:
+            that:
+              - calibre_web_container.Config.User == '0:0'
             fail_msg: >-
-              Expected exactly one mount at {{ calibre_web_verify_library_path_in_container }},
-              found {{ calibre_web_books_mounts | length }}
-            # Both messages are templated whatever the outcome, so this one must
-            # not reach for an element that only exists when the assertion holds -
-            # doing so replaces the failure above with a templating error.
+              The container itself runs as root.
+            success_msg: "The container runs as {{ calibre_web_container.Config.User }}"
+
+        # See the comment on the previous step.
+        - name: Assert that the role's uid and gid reached the container
+          ansible.builtin.assert:
+            that:
+              - ('PUID=' ~ calibre_web_expected_uid) in calibre_web_container.Config.Env
+              - ('PGID=' ~ calibre_web_expected_gid) in calibre_web_container.Config.Env
+            fail_msg: >-
+              The container runs
+              with {{ calibre_web_container.Config.Env | select('match', 'P[UG]ID=') | list }}
+            success_msg: "The container carries the matching PUID/PGID"
+
+        - name: Assert that the role's timezone reached the container environment
+          ansible.builtin.assert:
+            that:
+              - ('TZ=' ~ calibre_web_expected_timezone) in calibre_web_container.Config.Env
+            fail_msg: "templates/env.j2 did not put TZ={{ calibre_web_expected_timezone }} on the container"
+            success_msg: "The container environment carries TZ={{ calibre_web_expected_timezone }}"
+
+        - name: Assert that the container image is the pinned version
+          when: "not calibre_web_container_image_self_build | bool"
+          ansible.builtin.assert:
+            that:
+              - calibre_web_container.Config.Image == 'ghcr.io/linuxserver/calibre-web:' ~ calibre_web_defaults.calibre_web_version
+            fail_msg: >-
+              The container runs {{ calibre_web_container.Config.Image }}, not the
+              {{ calibre_web_defaults.calibre_web_version }} pinned in defaults/main.yml
+            success_msg: "The container runs {{ calibre_web_container.Config.Image }}"
+
+        # ------------------------------------------------------------------
+        # Traefik labels
+        # ------------------------------------------------------------------
+
+        - name: Assert that the Traefik labels describe the configured hostname
+          ansible.builtin.assert:
+            that:
+              - calibre_web_container.Config.Labels['traefik.enable'] == 'true'
+              - calibre_web_container.Config.Labels['traefik.http.services.calibre-web.loadbalancer.server.port'] == '8083'
+            fail_msg: "The Traefik labels are not what templates/labels.j2 should have produced: {{ calibre_web_container.Config.Labels }}"
+            success_msg: "The Traefik labels route {{ calibre_web_expected_hostname }} to port 8083"
+
+        - name: Assert that the additional labels and extra arguments reached the container
+          ansible.builtin.assert:
+            that:
+              - calibre_web_container.Config.Labels['mash.molecule.additional-label'] == 'set-by-the-role'
+              - calibre_web_container.Config.Labels['mash.molecule.extra-argument'] == 'set-by-the-role'
+            fail_msg: >-
+              calibre_web_container_labels_additional_labels or
+              calibre_web_container_extra_arguments did not reach the container:
+              {{ calibre_web_container.Config.Labels }}
+            success_msg: "The additional label and the extra argument both reached the container"
+
+        # ------------------------------------------------------------------
+        # What the process inside the container actually sees
+        # ------------------------------------------------------------------
+
+        - name: Ask the Calibre-Web container which timezone and user it is running in
+          ansible.builtin.command:
+            cmd: docker exec calibre-web sh -c 'date +%Z; id -u; id -g'
+          register: calibre_web_process_identity
+          changed_when: false
+
+        # Unlike other services whose container image is provided by linuxserver.io,
+        # Calibre-Web's container does not support running as non-root user.
+        - name: Assert that the Calibre-Web process runs in the role's timezone, as the root user
+          ansible.builtin.assert:
+            that:
+              - calibre_web_process_identity.stdout_lines[0] == calibre_web_expected_timezone_abbreviation
+              - calibre_web_process_identity.stdout_lines[1] == "0"
+              - calibre_web_process_identity.stdout_lines[2] == "0"
+            fail_msg: >-
+              The container reports zone/uid/gid {{ calibre_web_process_identity.stdout_lines }},
+              expected [{{ calibre_web_expected_timezone_abbreviation }},
+              0, 0]
             success_msg: >-
-              The books directory is mounted at {{ calibre_web_verify_library_path_in_container }}
-              from {{ calibre_web_books_mounts | join(', ') }}
+              The Calibre-Web process runs in {{ calibre_web_process_identity.stdout_lines[0] }}
+              as {{ calibre_web_process_identity.stdout_lines[1] }}:{{ calibre_web_process_identity.stdout_lines[2] }}
+
+        # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
 
         - name: Copy the Calibre library schema
           ansible.builtin.copy:
@@ -158,13 +265,13 @@
                 connection.commit()
                 connection.close()
               - "{{ calibre_web_verify_schema_path_on_host }}"
-              - "{{ calibre_web_books_mounts | first }}/metadata.db"
+              - "{{ calibre_web_books_mount[0].Source }}/metadata.db"
           args:
-            creates: "{{ calibre_web_books_mounts | first }}/metadata.db"
+            creates: "{{ calibre_web_books_mount[0].Source }}/metadata.db"
 
         - name: Ensure Calibre-Web can read its library
           ansible.builtin.file:
-            path: "{{ calibre_web_books_mounts | first }}/metadata.db"
+            path: "{{ calibre_web_books_mount[0].Source }}/metadata.db"
             owner: "{{ calibre_web_uid }}"
             group: "{{ calibre_web_gid }}"
             mode: "0640"
@@ -434,23 +541,6 @@
               expected {{ calibre_web_uid }}:{{ calibre_web_gid }}
             success_msg: "Calibre-Web runs as {{ calibre_web_uid }}:{{ calibre_web_gid }}"
 
-        # The other half of templates/env.j2: a value with no dedicated plumbing,
-        # which reaches the container only because the environment file was
-        # rendered and handed to `docker create`.
-        - name: Determine the timezone the Calibre-Web container was given
-          ansible.builtin.command:
-            cmd: "docker exec {{ calibre_web_defaults.calibre_web_identifier }} printenv TZ"
-          register: calibre_web_container_timezone
-          changed_when: false
-
-        - name: Assert the configured timezone reached the Calibre-Web container
-          ansible.builtin.assert:
-            that: calibre_web_container_timezone.stdout | trim == calibre_web_environment_variables_tz
-            fail_msg: >-
-              The Calibre-Web container has TZ={{ calibre_web_container_timezone.stdout | trim }},
-              expected {{ calibre_web_environment_variables_tz }}
-            success_msg: "The Calibre-Web container has TZ={{ calibre_web_environment_variables_tz }}"
-
         - name: Verify nothing was quietly restarting while all of that was being checked
           when: "calibre_web_restarts_check_enabled | bool"
           block:
@@ -496,10 +586,9 @@
               - "Calibre-Web systemd: {% for unit, state in calibre_web_verify_units | zip(calibre_web_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Calibre-Web restarts: {% for unit, restarts in calibre_web_verify_units | zip(calibre_web_restarts_after.results | map(attribute='status.NRestarts')) %}{{ restarts }} ({{ unit }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Calibre-Web version: {{ calibre_web_running_version }}"
-              - "Library mounted from: {{ calibre_web_books_mounts | first }}"
+              - "Library mounted from: {{ calibre_web_books_mount[0].Source }}"
               - "Library page: {{ calibre_web_library_page.status }}"
               - "Running as: {{ calibre_web_uid }}:{{ calibre_web_gid }}"
-              - "Timezone: {{ calibre_web_container_timezone.stdout | trim }}"
 
       rescue:
         # Whatever went wrong, the reason is almost always in the systemd service log.

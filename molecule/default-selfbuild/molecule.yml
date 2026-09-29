@@ -42,18 +42,35 @@ provisioner:
 
         # Variables for Calibre-Web
         #
-        # The user and the timezone are deliberately not the values the role
-        # or the container image would arrive at on their own (1000 and 911
-        # respectively for the user, Etc/UTC for the timezone), so that the
-        # verification can tell a value that travelled all the way into the
-        # running container from one that merely happens to match a default.
-        calibre_web_uid: 1042
-        calibre_web_gid: 1042
-        calibre_web_environment_variables_tz: Europe/Sofia
-        calibre_web_scheme: http
-        calibre_web_hostname: localhost
-        calibre_web_container_labels_traefik_enabled: false
-        calibre_web_container_http_host_bind_port: 8083
+        # Deliberately not 1000: the linuxserver.io PUID/PGID pattern has left a
+        # needed directory unwritable in other roles of this fleet, and a uid
+        # that exists in the test image by accident would hide that.
+        calibre_web_uid: 1717
+        calibre_web_gid: 1717
+
+        calibre_web_hostname: calibre-web.molecule.local
+
+        calibre_web_path_prefix: /
+
+        # Bound to the loopback interface of the test container only. Nothing
+        # is published to the machine running Molecule, so two scenarios can
+        # run side by side without fighting over a port.
+        calibre_web_container_http_host_bind_port: "127.0.0.1:8083"
+
+        calibre_web_container_http_port: 8083
+
+        calibre_web_container_labels_traefik_enabled: true
+
+        calibre_web_container_labels_additional_labels:
+          - mash.molecule.additional-label=set-by-the-role
+
+        calibre_web_container_extra_arguments:
+          - "--label=mash.molecule.extra-argument=set-by-the-role"
+
+        # Neither the role's default of Etc/UTC nor the test host's zone, so
+        # that the timezone the container ends up in can only have come from
+        # templates/env.j2.
+        calibre_web_environment_variables_tz: Asia/Tokyo
 
         # Test self-building
         calibre_web_container_image_self_build: true
