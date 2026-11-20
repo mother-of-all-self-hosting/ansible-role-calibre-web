@@ -26,9 +26,6 @@
   with_items:
     - calibre_web_uid
     - calibre_web_gid
-    - calibre_web_hostname
-    - calibre_web_path_prefix
-    - calibre_web_container_network
 
 - name: Run if Traefik is enabled
   when: calibre_web_container_labels_traefik_enabled | bool
