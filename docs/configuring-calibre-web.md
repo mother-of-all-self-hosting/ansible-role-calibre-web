@@ -57,6 +57,8 @@ calibre_web_hostname: "example.com"
 
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
+**Note**: hosting Calibre-Web under a subpath (by configuring the `calibre_web_path_prefix` variable) does not seem to be possible due to Calibre-Web's technical limitations.
+
 ### Mount a directory for loading Calibre database (optional)
 
 By default, Calibre-Web will search `/books` directory for your Calibre database.

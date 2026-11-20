@@ -28,6 +28,9 @@ calibre_web_hostname: ""
 
 # The path at which Calibre-Web is served.
 # This value must either be `/` or not end with a slash (e.g. `/calibre-web`).
+#
+# Hosting Calibre-Web under a subpath does not seem to be possible due to Calibre-Web's
+# technical limitations.
 calibre_web_path_prefix: /
 
 calibre_web_container_image: "{{ calibre_web_container_image_registry_prefix }}linuxserver/calibre-web:{{ calibre_web_container_image_tag }}"
