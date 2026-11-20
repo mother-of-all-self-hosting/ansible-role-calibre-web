@@ -25,7 +25,7 @@ traefik.http.middlewares.{{ calibre_web_identifier }}-basic-auth.basicauth.users
 {% endif %}
 
 {% if calibre_web_container_labels_traefik_path_prefix != '/' %}
-traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=^({{ calibre_web_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.regex=^(https?://[^/]+{{ calibre_web_container_labels_traefik_path_prefix | regex_escape }})$
 traefik.http.middlewares.{{ calibre_web_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
 {% set middlewares = middlewares + [calibre_web_identifier + '-slashless-redirect'] %}
 {% endif %}
